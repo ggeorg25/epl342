@@ -30,7 +30,6 @@ function loginRequest() {
       let response;
       try {
         response = JSON.parse(xhr.responseText);
-        console.log('FULL LOGIN RESPONSE:', response);
       } catch (e) {
         console.error('Invalid JSON from server:', xhr.responseText);
         showSignupMessage('Unexpected response from server.', 'error');
@@ -51,13 +50,9 @@ function loginRequest() {
         showSignupMessage(response.message || 'Login successful.', 'success');
 
         setTimeout(() => {
-          const rawRole = response.role ?? response.type_r ?? '';
-          const role = String(rawRole).trim().toLowerCase();
+          const role = String(response.role).trim().toLowerCase();
         
-          console.log('ROLE USED FOR REDIRECT:', role);
-        
-          let target = 'homepage_pas.html'; // default
-        
+   
           switch (role) {
             case 'passenger':
               target = 'homepage_pas.html';
@@ -70,7 +65,6 @@ function loginRequest() {
               break;
           }
         
-          console.log('REDIRECTING TO:', target);
           window.location.href = target;
         }, 800);
 

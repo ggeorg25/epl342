@@ -75,9 +75,6 @@ function signupRequest() {
         }, 800);
       } else {
         showSignupMessage(resp.message || 'Signup failed.', 'error');
-        if (resp.debug) {
-          console.log('DEBUG from server:', resp.debug);
-        }
       }
     } else {
       console.error('Signup error:', xhr.status, xhr.responseText);

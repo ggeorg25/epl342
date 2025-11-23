@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rent a car | OSRH</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="navbar">
+        <a href="homepage_pas.html" class="OSRH">One-Stop Ride-Hail</a>
+
+    <div class="profile-text">
+      <span class="profile-label">Welcome</span>
+      <span class="profile-username" id="navbar-username"></span>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="hero-card">
+      <h1 class="hero-title">Rent a car</h1>
+      
+      <form id="passenger-form">
+        
+   
+    <h2 class="section-title">1. Ride Type </h2>
+        <div class="form-group">
+          <label for="service_type">Ride Type</label>
+          <select id="service_type" name="service_type">
+            <option value="1">Standard passenger ride</option>
+            <option value="2">Premium passenger ride</option>
+            <option value="3">Light cargo transport</option>
+            <option value="4">Heavy cargo transport</option>
+          </select>
+        </div>
+
+        <h2 class="section-title">2. Duration </h2>
+
+            <label for="start">Rental start (date & time):</label>
+            <input 
+              type="datetime-local" 
+              id="start" 
+              name="rental_start" 
+              required
+            >
+            <br><br>
+          
+            <label for="end">Rental end (date & time):</label>
+            <input 
+              type="datetime-local" 
+              id="end" 
+              name="rental_end" 
+              required
+            >
+            <br><br>
+     
+            <div class="button-row">
+                <button 
+                  type="button" 
+                  class="btn-primary" 
+                  onclick="window.location.href='vehicle_options.html'">
+                  Continue
+                </button>
+              </div>
+              
+      </form>
+    </section>
+  </main>
+
+
+ 
+  
+</body>
+</html>

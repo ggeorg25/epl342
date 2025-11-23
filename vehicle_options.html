@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Choose Vehicle | One-Stop Ride-Hail</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header class="navbar">
+    <a href="homepage_pas.html" class="OSRH">One-Stop Ride-Hail</a>
+    <div class="website_name">One-Stop Ride-Hail</div>
+    <div class="profile-text">
+        <span class="profile-label">Welcome</span>
+        <span class="profile-username" id="navbar-username"></span>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="hero-card">
+      <h1 class="hero-title">Available Options</h1>
+      <p class="hero-subtitle">Choose a vehicle rom the map.</p>
+
+      <div id="map"></div>
+    </section>
+  </main>
+
+ 
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCUWMPIxE9NI6A4zl20444N9-1ZFQIEeX0&callback=initMap&loading=async"
+    async
+  ></script>
+
+
+  <script src="vehicle_options.js"></script>
+</body>
+</html>

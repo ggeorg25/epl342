@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ride hailing | OSRH</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="navbar">
+        <a href="homepage_pas.html" class="OSRH">One-Stop Ride-Hail</a>
+    <div class="profile-text">
+      <span class="profile-label">Welcome</span>
+      <span class="profile-username" id="navbar-username"></span>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="hero-card">
+      <h1 class="hero-title">Ride hailing</h1>
+      
+      <form id="taxi-form">
+        
+        <h2 class="section-title">1.How do you want to travel?</h2>
+        <div class="service-grid">
+          <label class="service-card">
+            <input type="radio" name="service" value="driver" checked>
+            <div class="service-card-body">
+             <span> Ride with Driver
+            </div>
+          </label>
+
+          <label class="service-card">
+            <input type="radio" name="service" value="teledrive">
+            <div class="service-card-body">
+           <span>Teledriving Vehicle  </span>
+            </div>
+          </label>
+
+          <label class="service-card">
+            <input type="radio" name="service" value="autonomous">
+            <div class="service-card-body">
+              <span> Fully Autonomous Vehicle</span>
+            </div>
+          </label>
+        </div>
+
+       
+        <h2 class="section-title">2. Ride Type </h2>
+        <div class="form-group">
+          <label for="service_type">Ride Type</label>
+          <select id="service_type" name="service_type">
+            <option value="1">Standard passenger ride</option>
+            <option value="2">Premium passenger ride</option>
+            <option value="3">Light cargo transport</option>
+            <option value="4">Heavy cargo transport</option>
+          </select>
+        </div>
+
+        <h2 class="section-title">3. Pickup & Dropoff</h2>
+
+        <div class="form-group">
+          <label>Click mode for map</label>
+          <div>
+            <label>
+              <input type="radio" name="clickMode" value="pickup" checked>
+              Set Pickup
+            </label>
+            &nbsp;&nbsp;
+            <label>
+              <input type="radio" name="clickMode" value="dropoff">
+              Set Dropoff
+            </label>
+          </div>
+        </div>
+
+        
+        <div class="form-group">
+          <label>Pickup Location (lat, lng)</label>
+          <input id="pickup_display" type="text" readonly placeholder="Click on the map to set pickup">
+        </div>
+
+       
+        <div class="form-group">
+          <label>Dropoff Location (lat, lng)</label>
+          <input id="dropoff_display" type="text" readonly placeholder="Click on the map to set dropoff">
+        </div>
+
+     
+        <input type="hidden" id="pickup_lat" name="pickup_lat">
+        <input type="hidden" id="pickup_lng" name="pickup_lng">
+        <input type="hidden" id="dropoff_lat" name="dropoff_lat">
+        <input type="hidden" id="dropoff_lng" name="dropoff_lng">
+
+       
+        <div id="map"></div>
+
+        <div class="button-row">
+          <button type="submit" class="btn-primary">Continue</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="taxi.js"></script>
+
+ 
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCUWMPIxE9NI6A4zl20444N9-1ZFQIEeX0&callback=initMap&loading=async"
+    async
+  ></script>
+</body>
+</html>
+
+

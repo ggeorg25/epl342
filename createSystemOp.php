@@ -20,7 +20,7 @@ if ($data === null) {
 }
 
 $so_username = $data->so_username;
-$sa_users_id = $data->sa_users_id ;
+$sa_users = $data->sa_users ;
 
 
 
@@ -31,7 +31,7 @@ try {
     $sql = "{CALL [eioann09].[CreateSystemOperator](?,?)}";
     $stmt = $conn->prepare($sql);
     $stmt->bindParam(1, $so_username, PDO::PARAM_STR);
-    $stmt->bindParam(2, $sa_users_id, PDO::PARAM_INT);
+    $stmt->bindParam(2, $sa_users, PDO::PARAM_INT);
 
     $stmt->execute();
 

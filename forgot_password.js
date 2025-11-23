@@ -53,7 +53,7 @@ function showSignupMessage(message, type) {
           }, 800);
         } else {
           showSignupMessage(resp.message || 'Forgot password failed.', 'error');
-          if (resp.debug) console.log('DEBUG from server:', resp.debug);
+
         }
       } else {
         console.error('Forgot password error:', xhr.status, xhr.responseText);

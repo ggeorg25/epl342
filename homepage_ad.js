@@ -1,4 +1,3 @@
-console.log('homepage_ad.js v3 loaded');  
 
 function showAdminMessage(message, type) {
   const alertBox = document.getElementById('alert');
@@ -36,16 +35,13 @@ function createSystemOperator() {
     sa_users_id: saUsersId
   };
 
-  console.log('SENDING DATA TO createSystemOp.php:', data);
 
   const xhr = new XMLHttpRequest();
 
   xhr.onreadystatechange = function () {
     if (xhr.readyState !== 4) return;
 
-    console.log('RESPONSE STATUS:', xhr.status);
-    console.log('RESPONSE TEXT:', xhr.responseText);
-
+   
     let resp;
     try {
       resp = JSON.parse(xhr.responseText);
@@ -62,7 +58,7 @@ function createSystemOperator() {
     } else {
   
       showAdminMessage(resp.message || 'Operation failed.', 'error');
-      if (resp.debug) console.log('DEBUG from PHP:', resp.debug);
+    
     }
   };
 
@@ -77,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const storedUsername = localStorage.getItem('username') || 'User';
   const navbarUsernameEl = document.getElementById('navbar-username');
 
-  console.log('STORED USERNAME:', storedUsername);
 
   if (navbarUsernameEl) {
     navbarUsernameEl.textContent = storedUsername;
