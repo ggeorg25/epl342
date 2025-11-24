@@ -4,10 +4,6 @@ require 'connect.php';
 
 header('Content-Type: application/json');
 
-
-
-
-
 $json = trim(file_get_contents("php://input"));
 $data = json_decode($json);
 

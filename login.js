@@ -63,6 +63,9 @@ function loginRequest() {
             case 'system admin':
               target = 'homepage_ad.html';
               break;
+            case 'driver':
+            target = 'homepage_driver.html';
+            break;
           }
         
           window.location.href = target;

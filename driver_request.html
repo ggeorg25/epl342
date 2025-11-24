@@ -23,7 +23,7 @@
       </h1>
 
 
-      <form id="driverVehicleForm" action="driver_request_docs.php" method="post" enctype="multipart/form-data">
+      <form id="driverVehicleForm" action="driver_vehicle_request_docs.php" method="post" enctype="multipart/form-data">
 
         <section class="form-section">
           <h2>Driver Documents</h2>
@@ -41,7 +41,7 @@
 
           <div class="doc-block" data-required-doc="true">
             <h3>ID / Passport</h3>
-            <input type="hidden" name="driver_docs[0][d_doc_type]" value="1">
+            <input type="hidden" name="d_doc_type" value="1">
 
             <div class="form-row">
               <label for="id_doc_code">Document Code</label>
@@ -199,32 +199,18 @@
             <label for="service_type">Service Type</label>
             <select id="service_type" name="vehicle[service_type]" required>
               <option value="">Select</option>
-              <option value="11"
-                      data-base="3.00"
-                      data-perkm="0.20"
-                      data-minfare="5.00"
-                      data-maxfare="15.00">
+              <option value="11">
                 Standard passenger ride
               </option>
-              <option value="12"
-                      data-base="5.00"
-                      data-perkm="0.35"
-                      data-minfare="8.00"
-                      data-maxfare="18.00">
+              <option value="12">
                 Premium passenger ride
               </option>
               <option value="13"
-                      data-base="4.00"
-                      data-perkm="0.30"
-                      data-minfare="7.00"
-                      data-maxfare="16.00">
+                      >
                 Light household cargo
               </option>
               <option value="14"
-                      data-base="6.00"
-                      data-perkm="0.40"
-                      data-minfare="10.00"
-                      data-maxfare="20.00">
+                    >
                 Heavy household cargo
               </option>
             </select>

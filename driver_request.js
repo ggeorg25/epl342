@@ -8,6 +8,70 @@ document.addEventListener('DOMContentLoaded', () => {
   if (heroUsernameEl) heroUsernameEl.textContent = storedUsername;
 });
 
+
+function showSignupMessage(message, type) {
+  const alertBox = document.querySelector('#alert');
+  const alertText = document.querySelector('#alert-text');
+
+  if (alertBox && alertText) {
+    alertText.textContent = message;
+    alertBox.classList.remove('alert-success', 'alert-error');
+    alertBox.classList.add(type === 'success' ? 'alert-success' : 'alert-error');
+    alertBox.style.display = 'flex';
+  } else {
+    alert(message);
+  }
+}
+
+function submitDriverVehicleRequest() {
+  const form = document.getElementById('driverVehicleForm');
+  if (!form) {
+    console.error('driverVehicleForm not found');
+    return;
+  }
+
+  const formData = new FormData(form);
+
+  const xhr = new XMLHttpRequest();
+
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState !== 4) return;
+
+    if (xhr.status >= 200 && xhr.status < 300) {
+      let resp;
+      try {
+        resp = JSON.parse(xhr.responseText);
+      } catch (e) {
+        console.error('Invalid JSON from server:', xhr.responseText);
+        showSignupMessage('Unexpected response from server.', 'error');
+        return;
+      }
+
+      if (resp.status === 'success') {
+        showSignupMessage(resp.message || 'Request submitted successfully.', 'success');
+        setTimeout(() => { window.location.href = 'homepage_pas.html'; }, 800);
+      } else {
+        showSignupMessage(resp.message || 'Submission failed.', 'error');
+      }
+    } else {
+      console.error('Submit error:', xhr.status, xhr.responseText);
+      showSignupMessage('Network/server error. Please try again.', 'error');
+    }
+  };
+
+  xhr.open('POST', 'driver_vehicle_request_docs.php');
+
+  xhr.send(formData);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('#driverVehicleForm');
+  if (!form) return;
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+   
 document.addEventListener('DOMContentLoaded', function () {
   const form = document.getElementById('driverVehicleForm');
   const euCheckbox = document.getElementById('is_eu_resident');
@@ -67,26 +131,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  
-  const serviceSelect = document.getElementById('service_type');
-  const serviceDetailsDiv = document.getElementById('service-type-details');
-
-  function updateServiceTypeDetails() {
-    const opt = serviceSelect.options[serviceSelect.selectedIndex];
-    const base = opt.getAttribute('data-base');
-    const perKm = opt.getAttribute('data-perkm');
-    const minFare = opt.getAttribute('data-minfare');
-    const maxFare = opt.getAttribute('data-maxfare');
-
-    if (!base) {
-      serviceDetailsDiv.textContent = '';
-      return;
-    }
-
-    serviceDetailsDiv.textContent =
-      `Base fare: €${base}, per km: €${perKm}, min fare: €${minFare}, max fare: €${maxFare}`;
-  }
-
-  serviceSelect.addEventListener('change', updateServiceTypeDetails);
-  updateServiceTypeDetails();
+});
+    submitDriverVehicleRequest();
+  });
 });

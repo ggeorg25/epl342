@@ -20,7 +20,7 @@ if ($data === null) {
 }
 
 $so_username = $data->so_username;
-$sa_users = $data->sa_users ;
+$sa_users = $data->sa_users_id ;
 
 
 
