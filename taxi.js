@@ -80,7 +80,7 @@ window.initMap = function () {
   const defaultCenter = { lat: 35.1264, lng: 33.4299 };
 
   const map = new google.maps.Map(mapDiv, {
-    zoom: 12,
+    zoom: 16,
     center: defaultCenter,
   });
 
@@ -133,6 +133,10 @@ window.initMap = function () {
       if (pickupLatInput)  pickupLatInput.value  = lat;
       if (pickupLngInput)  pickupLngInput.value  = lng;
       if (pickupDisplay)   pickupDisplay.value   = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      // ★ Auto-switch from pickup → dropoff
+const dropoffRadio = document.querySelector('input[value="dropoff"]');
+if (dropoffRadio) dropoffRadio.checked = true;
+
     } else {
       if (dropoffMarker) dropoffMarker.setMap(null);
 

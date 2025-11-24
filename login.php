@@ -29,7 +29,7 @@ if ($email === '' || $password_login === '') {
 try {
     $db   = new Database();
     $conn = $db->getConnection();
-
+    
     $sql = "{CALL [eioann09].[getHashedPassword](?)}";
     $stmt = $conn->prepare($sql);
     $stmt->bindParam(1, $email, PDO::PARAM_STR);
