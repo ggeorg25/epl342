@@ -1,0 +1,20 @@
+[2025-11-24T17:58:36+01:00] Exception: SQLSTATE[42S02]: [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid object name 'VehicleType'.
+Raw input: {"service_type_id":"11","lat":"35.12698089977339","lng":"33.42332536939368"}
+Parsed: {"service_type_id":"11","lat":"35.12698089977339","lng":"33.42332536939368"}
+
+[2025-11-24T18:09:13+01:00] Exception: SQLSTATE[42S02]: [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid object name 'VehicleType'.
+Raw input: {"service_type_id":"11","lat":"35.12698089977339","lng":"33.42332536939368"}
+Parsed: {"service_type_id":"11","lat":"35.12698089977339","lng":"33.42332536939368"}
+
+[2025-11-24T18:28:34+01:00] Exception: SQLSTATE[42S02]: [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid object name 'VehicleType'.
+Raw input: {"service_type_id":"11","lat":"35.12698089977339","lng":"33.42332536939368"}
+Parsed: {"service_type_id":"11","lat":"35.12698089977339","lng":"33.42332536939368"}
+
+[2025-11-24T18:32:12+01:00] Exception: SQLSTATE[42S02]: [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid object name 'VehicleType'.
+Raw input: {"service_type_id":"11","lat":"35.14767606298702","lng":"33.41540613772197"}
+Parsed: {"service_type_id":"11","lat":"35.14767606298702","lng":"33.41540613772197"}
+
+[2025-11-24T18:34:25+01:00] Exception: SQLSTATE[42S02]: [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Invalid object name 'VehicleType'.
+Raw input: {"service_type_id":"11","lat":"35.14767606298702","lng":"33.41540613772197"}
+Parsed: {"service_type_id":"11","lat":"35.14767606298702","lng":"33.41540613772197"}
+

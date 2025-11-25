@@ -21,7 +21,7 @@
     <section class="hero-card">
       <h1 class="hero-title">Ride hailing</h1>
       
-      <form id="taxi-form">
+      <form id="taxi-form" action="set_session.php" method="POST">
         
         <h2 class="section-title">1.How do you want to travel?</h2>
         <div class="service-grid">
@@ -59,11 +59,11 @@
         <div class="form-group">
           <label for="service_type">Ride Type</label>
           <select id="service_type" name="service_type">
-            <option value="1">Standard passenger ride</option>
-            <option value="2">Premium passenger ride</option>
-            <option value="3">Light cargo transport</option>
-            <option value="4">Heavy cargo transport</option>
-            <option value="5">Multi-hop transport</option>
+            <option value="11">Standard passenger ride</option>
+            <option value="12">Premium passenger ride</option>
+            <option value="13">Light cargo transport</option>
+            <option value="14">Heavy cargo transport</option>
+            <option value="15">Multi-hop transport</option>
             
           </select>
         </div>
@@ -102,9 +102,10 @@
         <input type="hidden" id="pickup_lng" name="pickup_lng">
         <input type="hidden" id="dropoff_lat" name="dropoff_lat">
         <input type="hidden" id="dropoff_lng" name="dropoff_lng">
+        <input type="hidden" name="redirect" value="1">
 
        
-        <div id="map"></div>
+        <div id="map" style="height: 500px; width: 100%; border-radius: 8px; margin-top: 20px; margin-bottom: 20px;"></div>
 
         <div class="button-row">
           <button type="submit" class="btn-primary">Continue</button>
@@ -113,13 +114,14 @@
     </section>
   </main>
 
-  <script src="taxi.js"></script>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 
- 
-  <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCUWMPIxE9NI6A4zl20444N9-1ZFQIEeX0&callback=initMap&loading=async"
-    async
-  ></script>
+  <!-- Leaflet JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+  <script src="map.js"></script>
+  <script src="taxi.js"></script>
 </body>
 </html>
 

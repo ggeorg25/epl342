@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     if (window.map) {
-      window.map.setCenter({ lat, lng });
+      panTo(lat, lng);
     }
   }
 
@@ -61,14 +61,32 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      localStorage.setItem("selected_service", service);
-      localStorage.setItem("selected_service_type", serviceType);
-      localStorage.setItem("pickup_lat", pickupLat);
-      localStorage.setItem("pickup_lng", pickupLng);
-      localStorage.setItem("dropoff_lat", dropoffLat);
-      localStorage.setItem("dropoff_lng", dropoffLng);
+      // send values to server-side session and then redirect to PHP page
+      const body = new URLSearchParams();
+      body.append('service', service);
+      body.append('service_type', serviceType);
+      body.append('pickup_lat', pickupLat);
+      body.append('pickup_lng', pickupLng);
+      body.append('dropoff_lat', dropoffLat);
+      body.append('dropoff_lng', dropoffLng);
 
-      window.location.href = "ride_map_options.html";
+      fetch('set_session.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+      })
+      .then(res => res.json())
+      .then(resp => {
+        if (resp && resp.success) {
+          window.location.href = 'ride_map_options.php';
+        } else {
+          alert('Could not save session on server. Try again.');
+        }
+      })
+      .catch(err => {
+        console.error('Session save error', err);
+        alert('Network error saving session.');
+      });
     });
   }
 });
@@ -79,15 +97,16 @@ window.initMap = function () {
 
   const defaultCenter = { lat: 35.1264, lng: 33.4299 };
 
-  const map = new google.maps.Map(mapDiv, {
-    zoom: 16,
+  // Initialize Leaflet map
+  initMap("map", {
     center: defaultCenter,
+    zoom: 16
   });
 
-  
-  window.map = map;
+  // Make map global
+  const leafletMap = window.map;
 
- 
+  // Get user location
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -95,11 +114,10 @@ window.initMap = function () {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         };
-        map.setCenter(userPos);
+        panTo(userPos.lat, userPos.lng);
       },
       (error) => {
         console.warn("Geolocation error:", error);
-      
       }
     );
   }
@@ -115,35 +133,53 @@ window.initMap = function () {
   const pickupDisplay = document.getElementById("pickup_display");
   const dropoffDisplay = document.getElementById("dropoff_display");
 
-  map.addListener("click", (e) => {
-    const lat = e.latLng.lat();
-    const lng = e.latLng.lng();
+  // Handle map click
+  leafletMap.on("click", (e) => {
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
 
     const clickModeEl = document.querySelector('input[name="clickMode"]:checked');
     const mode = clickModeEl ? clickModeEl.value : "pickup";
 
     if (mode === "pickup") {
-      if (pickupMarker) pickupMarker.setMap(null);
+      // Remove previous pickup marker
+      if (pickupMarker) {
+        leafletMap.removeLayer(pickupMarker);
+      }
 
-      pickupMarker = new google.maps.Marker({
-        position: { lat, lng },
-        map: map,
-      });
+      // Add new pickup marker (green)
+      pickupMarker = L.circleMarker([lat, lng], {
+        radius: 10,
+        fillColor: 'green',
+        color: 'darkgreen',
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.8
+      }).addTo(leafletMap);
 
       if (pickupLatInput)  pickupLatInput.value  = lat;
       if (pickupLngInput)  pickupLngInput.value  = lng;
       if (pickupDisplay)   pickupDisplay.value   = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-      // ★ Auto-switch from pickup → dropoff
-const dropoffRadio = document.querySelector('input[value="dropoff"]');
-if (dropoffRadio) dropoffRadio.checked = true;
+      
+      // Auto-switch to dropoff mode
+      const dropoffRadio = document.querySelector('input[value="dropoff"]');
+      if (dropoffRadio) dropoffRadio.checked = true;
 
     } else {
-      if (dropoffMarker) dropoffMarker.setMap(null);
+      // Remove previous dropoff marker
+      if (dropoffMarker) {
+        leafletMap.removeLayer(dropoffMarker);
+      }
 
-      dropoffMarker = new google.maps.Marker({
-        position: { lat, lng },
-        map: map,
-      });
+      // Add new dropoff marker (red)
+      dropoffMarker = L.circleMarker([lat, lng], {
+        radius: 10,
+        fillColor: 'red',
+        color: 'darkred',
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.8
+      }).addTo(leafletMap);
 
       if (dropoffLatInput) dropoffLatInput.value = lat;
       if (dropoffLngInput) dropoffLngInput.value = lng;
@@ -151,3 +187,10 @@ if (dropoffRadio) dropoffRadio.checked = true;
     }
   });
 };
+
+// Call initMap when page loads
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    window.initMap();
+  }, 100);
+});

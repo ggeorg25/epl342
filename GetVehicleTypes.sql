@@ -22,7 +22,7 @@ BEGIN
         JOIN DRIVER d ON d.driver_id = v.driver_id
         JOIN DriverLocation dl ON dl.driver_id = d.driver_id
         WHERE 
-            v.is_activev = 0
+            v.is_active = 0
             AND v.service_type_id = @service_type_id
             AND d.status = 'A'
             AND dl.location.STDistance(@pickup) <= @search_radius
@@ -33,17 +33,17 @@ BEGIN
     -- Step 2: Join with vehicle types
     ------------------------------------------------------------
     SELECT 
-        vt.vehicle_type_id,
-        vt.name,
+       -- vt.vehicle_type_id,
+        vt.vehicle_type,
         ISNULL(nv.available_count, 0) AS available_nearby
-    FROM VehicleType vt
+    FROM Vehicle_Type vt
     LEFT JOIN NearbyVehicles nv
         ON vt.vehicle_type_id = nv.vehicle_type_id
     WHERE vt.vehicle_type_id IN (
         SELECT DISTINCT vehicle_type_id
         FROM Vehicle
         WHERE service_type_id = @service_type_id
-          AND is_activev = 0
+          AND is_active = 0
     );
 END;
 GO
