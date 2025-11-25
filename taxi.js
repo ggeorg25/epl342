@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-window.initMap = function () {
+window.initTaxiMap = function () {
   const mapDiv = document.getElementById("map");
   if (!mapDiv) return;
 
@@ -114,7 +114,18 @@ window.initMap = function () {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         };
-        panTo(userPos.lat, userPos.lng);
+        // Zoom to user location
+        panTo(userPos.lat, userPos.lng, 16);
+        
+        // Add blue marker at user's current location
+        L.circleMarker([userPos.lat, userPos.lng], {
+          radius: 8,
+          fillColor: 'blue',
+          color: 'darkblue',
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 0.8
+        }).addTo(leafletMap).bindPopup("Your Location").openPopup();
       },
       (error) => {
         console.warn("Geolocation error:", error);
@@ -188,9 +199,9 @@ window.initMap = function () {
   });
 };
 
-// Call initMap when page loads
+// Call initTaxiMap when page loads
 window.addEventListener("load", () => {
   setTimeout(() => {
-    window.initMap();
+    window.initTaxiMap();
   }, 100);
 });

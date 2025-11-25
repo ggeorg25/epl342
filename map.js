@@ -29,7 +29,11 @@ function initMap(containerId = 'map', options = {}) {
     maxZoom: 19
   }).addTo(map);
 
+  // Expose map globally
+  window.map = map;
+
   console.log('Leaflet map initialized');
+  return map;
 }
 
 /**
