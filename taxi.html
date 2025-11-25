@@ -5,8 +5,6 @@
   <title>Ride hailing | OSRH</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css">
-  <!-- Leaflet CSS for map -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 </head>
 
 <body>
@@ -23,7 +21,7 @@
     <section class="hero-card">
       <h1 class="hero-title">Ride hailing</h1>
       
-      <form id="taxi-form" action="set_session.php" method="POST">
+      <form id="taxi-form">
         
         <h2 class="section-title">1.How do you want to travel?</h2>
         <div class="service-grid">
@@ -104,10 +102,9 @@
         <input type="hidden" id="pickup_lng" name="pickup_lng">
         <input type="hidden" id="dropoff_lat" name="dropoff_lat">
         <input type="hidden" id="dropoff_lng" name="dropoff_lng">
-        <input type="hidden" name="redirect" value="1">
 
        
-        <div id="map" style="height: 500px; width: 100%; border-radius: 8px; margin-top: 20px; margin-bottom: 20px;"></div>
+        <div id="map"></div>
 
         <div class="button-row">
           <button type="submit" class="btn-primary">Continue</button>
@@ -116,11 +113,13 @@
     </section>
   </main>
 
-  <!-- Leaflet JS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="taxi.js"></script>
 
-  <script src="map.js?v=4"></script>
-  <script src="taxi.js?v=4"></script>
+ 
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCUWMPIxE9NI6A4zl20444N9-1ZFQIEeX0&callback=initMap&loading=async"
+    async
+  ></script>
 </body>
 </html>
 

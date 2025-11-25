@@ -1,0 +1,159 @@
+<?php
+session_start();
+header('Content-Type: application/json');
+
+require_once 'connect.php';
+
+// Ensure POST
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['status' => 'error', 'message' => 'Method not allowed']);
+    exit;
+}
+
+// Auth check
+$users_id  = $_SESSION['users_id']  ?? null;
+
+if ($users_id === null) {
+    http_response_code(401);
+    echo json_encode([
+        'status'  => 'error',
+        'message' => 'User/driver not authenticated.'
+    ]);
+    exit;
+}
+
+// ---------- Helpers for file uploads ----------
+function ensureUploadDir(string $dir): void {
+    if (!is_dir($dir)) {
+        mkdir($dir, 0777, true);
+    }
+}
+
+function saveSingleFile(string $fieldName, string $subFolder = 'misc'): ?string {
+    if (!isset($_FILES[$fieldName]) || $_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) {
+        return null;
+    }
+
+    $uploadBase = __DIR__ . '/uploads';
+    ensureUploadDir($uploadBase);
+
+    $targetDir = $uploadBase . '/' . $subFolder;
+    ensureUploadDir($targetDir);
+
+    $originalName = basename($_FILES[$fieldName]['name']);
+    $ext = pathinfo($originalName, PATHINFO_EXTENSION);
+    $newName = uniqid($fieldName . '_', true) . ($ext ? '.' . $ext : '');
+    $targetPath = $targetDir . '/' . $newName;
+
+    if (!move_uploaded_file($_FILES[$fieldName]['tmp_name'], $targetPath)) {
+        return null;
+    }
+
+    return 'uploads/' . $subFolder . '/' . $newName;
+}
+
+function saveNestedFile(string $field, int $index, string $key, string $subFolder): ?string {
+    if (
+        !isset($_FILES[$field]['name'][$index][$key]) ||
+        $_FILES[$field]['error'][$index][$key] !== UPLOAD_ERR_OK
+    ) {
+        return null;
+    }
+
+    $uploadBase = __DIR__ . '/uploads';
+    ensureUploadDir($uploadBase);
+
+    $targetDir = $uploadBase . '/' . $subFolder;
+    ensureUploadDir($targetDir);
+
+    $originalName = basename($_FILES[$field]['name'][$index][$key]);
+    $ext = pathinfo($originalName, PATHINFO_EXTENSION);
+    $newName = uniqid($field . '_' . $index . '_', true) . ($ext ? '.' . $ext : '');
+    $targetPath = $targetDir . '/' . $newName;
+
+    if (!move_uploaded_file($_FILES[$field]['tmp_name'][$index][$key], $targetPath)) {
+        return null;
+    }
+
+    return 'uploads/' . $subFolder . '/' . $newName;
+}
+
+try {
+    $db   = new Database();
+    $conn = $db->getConnection();
+
+    $conn->beginTransaction();
+
+
+    $driver_docs = $_POST['driver_docs'] ?? [];
+    $driverDocTypes = [
+        0 => 7,  // ID / Passport
+        1 => 8,  // Residence Permit
+        2 => 9,  // Driving License
+        3 => 10, // Criminal Record
+        4 => 11, // Medical
+        5 => 12  // Psychological
+    ];
+
+    $sqlDriverDoc  = "{CALL [eioann09].[insertDriverDoc](?,?,?,?,?,?,?)}";
+    $stmtDriverDoc = $conn->prepare($sqlDriverDoc);
+
+    foreach ($driver_docs as $idx => $doc) {
+        $doc_type_id = $driverDocTypes[$idx] ?? null;
+        if ($doc_type_id === null) {
+            continue;
+        }
+
+        $doc_code = $doc['doc_code']           ?? null;
+        $pub_date = $doc['d_doc_publish_date'] ?? null;
+        $exp_date = $doc['d_doc_ex_date']      ?? null;
+
+        $hasAnyData = $doc_code || $pub_date || $exp_date ||
+                      (isset($_FILES['driver_docs']['name'][$idx]['image_pdf']) &&
+                       $_FILES['driver_docs']['error'][$idx]['image_pdf'] !== UPLOAD_ERR_NO_FILE);
+
+        if (!$hasAnyData) {
+            continue;
+        }
+
+        $image_path = saveNestedFile('driver_docs', $idx, 'image_pdf', 'driver_docs');
+
+        $requiredIndexes = [0, 2, 3, 4, 5];
+        if (in_array($idx, $requiredIndexes, true) && (!$doc_code || !$pub_date || !$image_path)) {
+            $conn->rollBack();
+            echo json_encode([
+                'status'  => 'error',
+                'message' => "Missing required fields for driver document index $idx."
+            ]);
+            exit;
+        }
+
+        $stmtDriverDoc->bindValue(1, $driver_id,   $driver_id === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+        $stmtDriverDoc->bindValue(2, $users_id,    PDO::PARAM_INT);
+        $stmtDriverDoc->bindValue(3, $doc_type_id, PDO::PARAM_INT);
+        $stmtDriverDoc->bindValue(4, $doc_code,    PDO::PARAM_STR);
+        $stmtDriverDoc->bindValue(5, $pub_date,    PDO::PARAM_STR);
+        $stmtDriverDoc->bindValue(6, $exp_date,    PDO::PARAM_STR);
+        $stmtDriverDoc->bindValue(7, $image_path,  PDO::PARAM_STR);
+
+        $stmtDriverDoc->execute();
+    }
+
+  
+} catch (PDOException $e) {
+    if (isset($conn) && $conn->inTransaction()) {
+        $conn->rollBack();
+    }
+
+    http_response_code(500);
+    echo json_encode([
+        'status'  => 'error',
+        'message' => 'Unexpected error while processing driver & vehicle request.',
+        'sqlMessage' => trim($message),
+        'debug'   => $e->getMessage(),
+        'input'   => $debug_payload   // <-- ΠΟΛΥ ΧΡΗΣΙΜΟ ΤΩΡΑ
+    ]);
+        
+    exit;
+} 
