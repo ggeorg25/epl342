@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", () => {
   const demoEl = document.getElementById("demo");
 
@@ -91,13 +90,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-window.initMap = function () {
+window.initTaxiMap = function () {
   const mapDiv = document.getElementById("map");
   if (!mapDiv) return;
 
   const defaultCenter = { lat: 35.1264, lng: 33.4299 };
 
-  // Initialize Leaflet map
+  // Initialize Leaflet map (using map.js function)
   initMap("map", {
     center: defaultCenter,
     zoom: 16
@@ -105,8 +104,9 @@ window.initMap = function () {
 
   // Make map global
   const leafletMap = window.map;
+  if (!leafletMap) return;
 
-  // Get user location
+  // Get user location and zoom to it
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -114,7 +114,18 @@ window.initMap = function () {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         };
-        panTo(userPos.lat, userPos.lng);
+        // Zoom to user location
+        panTo(userPos.lat, userPos.lng, 16);
+        
+        // Optionally add a marker at user's location
+        L.circleMarker([userPos.lat, userPos.lng], {
+          radius: 8,
+          fillColor: 'blue',
+          color: 'darkblue',
+          weight: 2,
+          opacity: 0.8,
+          fillOpacity: 0.6
+        }).addTo(leafletMap).bindPopup("Your location");
       },
       (error) => {
         console.warn("Geolocation error:", error);
@@ -188,9 +199,9 @@ window.initMap = function () {
   });
 };
 
-// Call initMap when page loads
+// Initialize map when page loads
 window.addEventListener("load", () => {
   setTimeout(() => {
-    window.initMap();
+    window.initTaxiMap();
   }, 100);
 });

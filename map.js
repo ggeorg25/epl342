@@ -22,6 +22,9 @@ function initMap(containerId = 'map', options = {}) {
 
   // Initialize the map
   map = L.map(containerId).setView([center.lat, center.lng], zoom);
+  
+  // Make map available globally
+  window.map = map;
 
   // Add OpenStreetMap tile layer
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -30,6 +33,7 @@ function initMap(containerId = 'map', options = {}) {
   }).addTo(map);
 
   console.log('Leaflet map initialized');
+  return map;
 }
 
 /**
