@@ -7,15 +7,7 @@ session_start();
 
 require_once 'connect.php';
 
-// Log the start
-error_log("=== DRIVER DOCS REQUEST START ===");
-error_log("Method: " . $_SERVER['REQUEST_METHOD']);
-error_log("Content-Type: " . ($_SERVER['CONTENT_TYPE'] ?? 'not set'));
 
-// Don't set JSON header yet - we might have errors to display
-// header('Content-Type: application/json');
-
-// 1) Ensure POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     header('Content-Type: application/json');
@@ -23,7 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// 2) Auth check
 $users_id = $_SESSION['users_id'] ?? null;
 error_log("Session users_id: " . ($users_id ?? 'NULL'));
 
@@ -37,11 +28,10 @@ if ($users_id === null) {
     exit;
 }
 
-// 3) Check if we received any data
 error_log("POST keys: " . implode(', ', array_keys($_POST)));
 error_log("FILES keys: " . implode(', ', array_keys($_FILES)));
 
-// 3) Helpers
+
 function ensureUploadDir(string $dir): void {
     if (!is_dir($dir)) {
         if (!mkdir($dir, 0777, true)) {
@@ -141,7 +131,7 @@ try {
         exit;
     }
 
-    // Handle driver picture
+   
     error_log("Processing driver picture...");
     $driver_picture_path = null;
     if (isset($_FILES['driver_picture'])) {
@@ -184,21 +174,18 @@ try {
     $skippedDocs = [];
 
     foreach ($driver_docs as $idx => $doc) {
-        error_log("--- Doc index: $idx ---");
-        
-        if (isset($doc['d_doc_type'])) {
-            $doc_type_id = (int)$doc['d_doc_type'];
-        } else {
-            $doc_type_id = $driverDocTypes[$idx] ?? null;
-        }
-
+        // Use the doc type from the form data directly
+        $doc_type_id = isset($doc['d_doc_type']) ? (int)$doc['d_doc_type'] : null;
+    
         if ($doc_type_id === null) {
             $skippedDocs[] = "Index $idx: no doc_type_id";
+            error_log("Skipped doc at index $idx: no doc_type_id");
             continue;
         }
-
-        $doc_code = $doc['doc_code'] ?? null;
-        $pub_date = $doc['d_doc_publish_date'] ?? null;
+        
+        error_log("Processing doc index $idx with doc_type_id $doc_type_id");
+        $doc_code = $doc['doc_code'] ;
+        $pub_date = $doc['d_doc_publish_date'] ;
         $exp_date = $doc['d_doc_ex_date'] ?? null;
 
         $hasFile = (
@@ -233,7 +220,7 @@ try {
             }
         }
 
-        // Bind parameters
+        
         if ($driver_id === null || $driver_id === '') {
             $stmtDriverDoc->bindValue(1, null, PDO::PARAM_NULL);
         } else {
@@ -245,7 +232,15 @@ try {
         $stmtDriverDoc->bindValue(4, (int)$doc_type_id, PDO::PARAM_INT);
         $stmtDriverDoc->bindValue(5, $doc_code, PDO::PARAM_STR);
         $stmtDriverDoc->bindValue(6, $pub_date, PDO::PARAM_STR);
-        $stmtDriverDoc->bindValue(7, $exp_date, PDO::PARAM_STR);
+        $exp_raw = $doc['d_doc_ex_date'] ?? null;
+        $exp_date = (!empty($exp_raw)) ? $exp_raw : null;
+        
+        // later:
+        if ($exp_date === null) {
+            $stmtDriverDoc->bindValue(7, null, PDO::PARAM_NULL);
+        } else {
+            $stmtDriverDoc->bindValue(7, $exp_date, PDO::PARAM_STR);
+        }
         
         if ($image_path === null) {
             $stmtDriverDoc->bindValue(8, null, PDO::PARAM_NULL);
@@ -264,8 +259,6 @@ try {
             error_log("SQL Error: " . print_r($errorInfo, true));
         }
     }
-
-    error_log("Inserted $insertedCount documents");
 
     if ($insertedCount === 0) {
         $conn->rollBack();

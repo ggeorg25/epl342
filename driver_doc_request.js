@@ -1,4 +1,16 @@
-function showSignupMessage(message, type) {
+document.addEventListener('DOMContentLoaded', () => {
+  const storedUsername = localStorage.getItem('username') || 'User';
+
+  const navbarUsernameEl = document.getElementById('navbar-username');
+  const heroUsernameEl   = document.getElementById('hero-username');
+
+  if (navbarUsernameEl) navbarUsernameEl.textContent = storedUsername;
+  if (heroUsernameEl) heroUsernameEl.textContent = storedUsername;
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  
+  function showSignupMessage(message, type) {
     const alertBox = document.getElementById('alert');
     const alertText = document.getElementById('alert-text');
   
@@ -48,7 +60,7 @@ function showSignupMessage(message, type) {
     if (issue > today) {
       return {
         valid: false,
-        message: `${docName}: Issue date cannot be in the future.`
+        message: `${docName}: Invalid issue date.`
       };
     }
     
@@ -71,20 +83,21 @@ function showSignupMessage(message, type) {
       if (exp <= today) {
         return {
           valid: false,
-          message: `${docName}: Expiration date must be later than today.`
+          message: `${docName}: Invalid expiration date.`
         };
       }
       
       if (exp <= issue) {
         return {
           valid: false,
-          message: `${docName}: Expiration date must be later than issue date.`
+          message: `${docName}: Invalid expiration date.`
         };
       }
     }
     
     return { valid: true };
   }
+
   function submitDriverDocsRequest() {
     const submitBtn = document.getElementById('submitBtn');
     const form = document.getElementById('driverVehicleForm');
@@ -98,7 +111,7 @@ function showSignupMessage(message, type) {
     submitBtn.textContent = 'Checking...';
   
     try {
-      // Validate driver picture
+      
       const driverPictureInput = document.getElementById('driver_picture');
       const driverPictureValidation = validateFileSize(driverPictureInput, 2, 'Driver Picture');
       if (!driverPictureValidation.valid) {
@@ -108,9 +121,8 @@ function showSignupMessage(message, type) {
         return;
       }
   
-      // Define required documents with mapping to indices
       const docMappings = [
-        { // Index 0: ID/Passport
+        { 
           name: 'ID/Passport',
           codeId: 'id_doc_code',
           dateId: 'id_doc_publish',
@@ -119,7 +131,7 @@ function showSignupMessage(message, type) {
           checkOneMonth: false,
           required: true
         },
-        { // Index 1: Residence Permit (optional)
+        { 
           name: 'Residence Permit',
           codeId: 'res_permit_code',
           dateId: 'res_permit_publish',
@@ -128,7 +140,7 @@ function showSignupMessage(message, type) {
           checkOneMonth: false,
           required: false
         },
-        { // Index 2: Driving License
+        { 
           name: 'Driving License',
           codeId: 'dl_code',
           dateId: 'dl_publish',
@@ -137,7 +149,7 @@ function showSignupMessage(message, type) {
           checkOneMonth: false,
           required: true
         },
-        { // Index 3: Criminal Record
+        { 
           name: 'Criminal Record',
           codeId: 'cr_code',
           dateId: 'cr_publish',
@@ -146,7 +158,7 @@ function showSignupMessage(message, type) {
           checkOneMonth: true,
           required: true
         },
-        { // Index 4: Medical Certificate
+        { 
           name: 'Medical Certificate',
           codeId: 'med_code',
           dateId: 'med_publish',
@@ -155,7 +167,7 @@ function showSignupMessage(message, type) {
           checkOneMonth: false,
           required: true
         },
-        { // Index 5: Psychological Certificate
+        { 
           name: 'Psychological Certificate',
           codeId: 'psy_code',
           dateId: 'psy_publish',
@@ -166,7 +178,6 @@ function showSignupMessage(message, type) {
         }
       ];
   
-      // Validate all documents
       for (const doc of docMappings) {
         const code = document.getElementById(doc.codeId)?.value.trim();
         const issueDate = document.getElementById(doc.dateId)?.value;
@@ -176,7 +187,6 @@ function showSignupMessage(message, type) {
         
         const hasAnyData = code || issueDate || expirationDate || hasFile;
   
-        // Skip optional documents if no data provided
         if (!doc.required && !hasAnyData) {
           continue;
         }
@@ -189,7 +199,6 @@ function showSignupMessage(message, type) {
             return;
           }
   
-          // Validate file size
           const fileValidation = validateFileSize(fileInput, 2, doc.name);
           if (!fileValidation.valid) {
             showSignupMessage(fileValidation.message, 'error');
@@ -198,7 +207,6 @@ function showSignupMessage(message, type) {
             return;
           }
   
-          // Validate dates
           const dateValidation = validateDates(issueDate, expirationDate, doc.name, doc.checkOneMonth);
           if (!dateValidation.valid) {
             showSignupMessage(dateValidation.message, 'error');
@@ -209,55 +217,13 @@ function showSignupMessage(message, type) {
         }
       }
   
-      // All validations passed - create FormData with proper structure
       console.log('Creating FormData...');
-      const formData = new FormData();
+      const formData = new FormData(form); // Use the form directly to get all hidden inputs
   
-      // Add driver picture
-      const driverPictureFile = driverPictureInput.files[0];
-      if (driverPictureFile) {
-        formData.append('driver_picture', driverPictureFile);
-      }
-  
-      // Add driver_id if it exists in the form
-      const driverIdInput = document.getElementById('driver_id');
-      if (driverIdInput && driverIdInput.value) {
-        formData.append('driver_id', driverIdInput.value);
-      }
-  
-      // Add each document in the nested structure PHP expects
-      docMappings.forEach((doc, index) => {
-        const code = document.getElementById(doc.codeId)?.value.trim();
-        const issueDate = document.getElementById(doc.dateId)?.value;
-        const expirationDate = doc.expId ? document.getElementById(doc.expId)?.value : '';
-        const fileInput = document.getElementById(doc.fileId);
-        const hasFile = fileInput?.files && fileInput.files.length > 0;
-  
-        const hasAnyData = code || issueDate || expirationDate || hasFile;
-  
-        // Only add if required or if there's any data
-        if (doc.required || hasAnyData) {
-          formData.append(`driver_docs[${index}][doc_code]`, code || '');
-          formData.append(`driver_docs[${index}][d_doc_publish_date]`, issueDate || '');
-          formData.append(`driver_docs[${index}][d_doc_ex_date]`, expirationDate || '');
-          
-          if (hasFile) {
-            formData.append(`driver_docs[${index}][image_pdf]`, fileInput.files[0]);
-          }
-        }
-      });
-  
-      // Log FormData contents for debugging
-      console.log('FormData entries:');
+      console.log('FormData contents:');
       for (let pair of formData.entries()) {
-        if (pair[1] instanceof File) {
-          console.log(pair[0] + ': [File] ' + pair[1].name + ' (' + pair[1].size + ' bytes)');
-        } else {
-          console.log(pair[0] + ': ' + pair[1]);
-        }
+        console.log(pair[0] + ': ' + pair[1]);
       }
-  
-      console.log('Sending request...');
   
       fetch('driver_doc_request.php', {
         method: 'POST',
@@ -321,10 +287,17 @@ function showSignupMessage(message, type) {
       submitBtn.textContent = 'Continue';
     }
   }
+
+  // Setup event listener
+  const submitBtn = document.getElementById('submitBtn');
+  if (submitBtn) {
     submitBtn.addEventListener('click', function (e) {
       e.preventDefault();
       console.log('Submit button clicked');
       submitDriverDocsRequest();
     });
+  } else {
+    console.error('Submit button not found!');
+  }
   
-    
+});

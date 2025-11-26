@@ -113,11 +113,8 @@ try {
 
     $vehicle_docs = $_POST['vehicle_docs'] ?? [];
 
-    error_log('FULL POST: ' . print_r($_POST, true));
-
     $vehicle_id = $_POST['vehicle_id'] ?? null;
-    error_log('vehicle_id from POST (raw): ' . var_export($vehicle_id, true));
-    
+
     $uploadDir = __DIR__ . '/uploads/vehicle_docs/';
     if (!is_dir($uploadDir)) {
         mkdir($uploadDir, 0755, true);

@@ -1,97 +1,192 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const storedUsername = localStorage.getItem('username') || 'User';
-  
-    const navbarUsernameEl = document.getElementById('navbar-username');
-    const heroUsernameEl   = document.getElementById('hero-username');
-  
-    if (navbarUsernameEl) navbarUsernameEl.textContent = storedUsername;
-    if (heroUsernameEl) heroUsernameEl.textContent = storedUsername;
-  });
-  
-form.addEventListener('submit', function (e) {
-    const requiredBlocks = document.querySelectorAll('.doc-block[data-required-doc="true"]');
-    let valid = true;
+function showSignupMessage(message, type) {
+  const alertBox = document.getElementById('alert');
+  const alertText = document.getElementById('alert-text');
 
-    requiredBlocks.forEach(block => {
-      block.classList.remove('doc-block-error');
-      const requiredInputs = block.querySelectorAll('input[required]');
-      requiredInputs.forEach(inp => {
-        if (!inp.value) {
-          valid = false;
-          block.classList.add('doc-block-error');
-        }
-      });
-    });
+  if (alertBox && alertText) {
+    alertText.textContent = message;
+    alertBox.style.display = 'block';
+    alertBox.style.backgroundColor = type === 'success' ? '#d4edda' : '#f8d7da';
+    alertBox.style.color = type === 'success' ? '#155724' : '#721c24';
+    alertBox.style.border = type === 'success' ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
+  } else {
+    alert(message);
+  }
+}
 
-    if (!valid) {
-      e.preventDefault();
-      alert('Please fill in all required document fields.');
+function submitDriverVehicleRequest() {
+  const submitBtn = document.getElementById('submitBtn');
+  
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Checking...';
+
+  const serviceType = document.getElementById('service_type');
+  const vehicleType = document.getElementById('vehicle_type');
+  const licensePlate = document.getElementById('license_plate');
+  const seats = document.getElementById('seats');
+  const luggageVolume = document.getElementById('luggage_volume');
+  const luggageWeight = document.getElementById('luggage_weight');
+  const photoInterior = document.getElementById('photo_interior');
+  const photoExterior = document.getElementById('photo_exterior');
+
+  if (!serviceType || !vehicleType || !licensePlate || !seats || !luggageVolume || !luggageWeight) {
+    showSignupMessage('Some form fields are missing. Please refresh the page.', 'error');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Continue';
+    return;
+  }
+
+  if (!serviceType.value || !vehicleType.value || !licensePlate.value || !seats.value || !luggageVolume.value || !luggageWeight.value) {
+    showSignupMessage('Please fill in all required fields.', 'error');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Continue';
+    return;
+  }
+
+  if (!photoInterior || !photoInterior.files || !photoInterior.files[0]) {
+    showSignupMessage('Please select an interior photo.', 'error');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Continue';
+    return;
+  }
+
+  const interiorFile = photoInterior.files[0];
+  const interiorSizeKB = Math.round(interiorFile.size / 1024);
+
+  if (interiorFile.size > 500 * 1024) {
+    showSignupMessage(
+      `Interior photo is too large: ${interiorSizeKB}KB. Maximum allowed is 500KB. Please compress your image.`,
+      'error'
+    );
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Continue';
+    return;
+  }
+
+  if (!photoExterior || !photoExterior.files || !photoExterior.files[0]) {
+    showSignupMessage('Please select an exterior photo.', 'error');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Continue';
+    return;
+  }
+
+  const exteriorFile = photoExterior.files[0];
+  const exteriorSizeKB = Math.round(exteriorFile.size / 1024);
+
+  if (exteriorFile.size > 500 * 1024) {
+    showSignupMessage(
+      `Exterior photo is too large: ${exteriorSizeKB}KB. Maximum allowed is 500KB. Please compress your image.`,
+      'error'
+    );
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Continue';
+    return;
+  }
+
+  const totalSize = interiorFile.size + exteriorFile.size;
+  const totalSizeMB = (totalSize / 1024 / 1024).toFixed(2);
+
+  if (totalSize > 5 * 1024 * 1024) {
+    showSignupMessage(
+      `Total file size is ${totalSizeMB}MB. Maximum allowed is 5MB. Please use smaller images.`,
+      'error'
+    );
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Continue';
+    return;
+  }
+
+  submitBtn.textContent = 'Uploading...';
+
+  const formData = new FormData();
+  
+  const usersId = localStorage.getItem('users_id');
+  if (usersId) {
+    formData.append('users_id', usersId);
+  }
+
+  formData.append('service_type', serviceType.value);
+  formData.append('vehicle_type', vehicleType.value);
+  formData.append('license_plate', licensePlate.value);
+  formData.append('seats', seats.value);
+  formData.append('luggage_volume', luggageVolume.value);
+  formData.append('luggage_weight', luggageWeight.value);
+  formData.append('photo_interior', interiorFile);
+  formData.append('photo_exterior', exteriorFile);
+
+  fetch('company_request.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.text())
+  .then(text => {
+    console.log('RAW RESPONSE:', text);
+    
+    // Check for PHP errors first
+    if (text.includes('<b>') || text.includes('Fatal error') || text.includes('Warning')) {
+      const errorMatch = text.match(/<b>(.+?)<\/b>/g);
+      if (errorMatch) {
+        const errorMsg = errorMatch.map(m => m.replace(/<\/?b>/g, '')).join(' ');
+        showSignupMessage('Server error: ' + errorMsg, 'error');
+      } else {
+        showSignupMessage('Server error. Please try again.', 'error');
+      }
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Continue';
+      return;
+    }
+    
+    // Parse JSON response
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      showSignupMessage('Server returned invalid response.', 'error');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Continue';
+      return;
     }
 
-   // 3) VEHICLE_DOCS
-//     $vehicle_docs = $_POST['vehicle_docs'] ?? [];
+    console.log('PARSED JSON:', data);
 
-//     // IMPORTANT: Replace 1,2,3 with the REAL IDs from VEHICLE_DOC_TYPE table
-//     $vehicleDocTypes = [
-//         0 => 10, // Vehicle Registration
-//         1 => 11, // MOT
-//         2 => 12  // Vehicle Classification
-//     ];
+    if (data.success) {
+     
+      const vehicleIdFromResponse = data.vehicle_id || data.new_vehicle_id;
 
-//     $sqlVehicleDoc  = "{CALL [eioann09].[insertVehicleDoc](?,?,?,?,?)}";
-//     $stmtVehicleDoc = $conn->prepare($sqlVehicleDoc);
+      if (vehicleIdFromResponse) {
+        localStorage.setItem('vehicle_id', vehicleIdFromResponse.toString());
+        sessionStorage.setItem('vehicle_id', vehicleIdFromResponse.toString());
+        console.log('Saved vehicle_id:', vehicleIdFromResponse);
+      } else {
+        console.warn('No vehicle_id found in response JSON');
+      }
 
-//     foreach ($vehicle_docs as $idx => $doc) {
-//         $v_doc_type_id = $vehicleDocTypes[$idx] ?? null;
-//         if ($v_doc_type_id === null) {
-//             continue;
-//         }
-
-//         $pub_date = $doc['v_doc_publish_date'] ?? null;
-//         $exp_date = $doc['v_doc_exp_date']     ?? null;
-//         $image_path = saveNestedFile('vehicle_docs', $idx, 'image_pdf', 'vehicle_docs');
-
-//         if (!$pub_date || !$image_path) {
-//             $conn->rollBack();
-//             echo json_encode([
-//                 'status'  => 'error',
-//                 'message' => "Missing required fields for vehicle document index $idx."
-//             ]);
-//             exit;
-//         }
-
-//         $stmtVehicleDoc->bindValue(1, $new_vehicle_id, PDO::PARAM_INT);
-//         $stmtVehicleDoc->bindValue(2, $v_doc_type_id,  PDO::PARAM_INT);
-//         $stmtVehicleDoc->bindValue(3, $pub_date,       PDO::PARAM_STR);
-//         $stmtVehicleDoc->bindValue(4, $exp_date,       PDO::PARAM_STR);
-//         $stmtVehicleDoc->bindValue(5, $image_path,     PDO::PARAM_STR);
-
-//         $stmtVehicleDoc->execute();
-//     }
-
-//     $conn->commit();
-
-//     echo json_encode([
-//         'status'         => 'success',
-//         'message'        => trim($message) ?: 'Driver & vehicle request submitted successfully.',
-//         'vehicle_id'     => (int)$new_vehicle_id,
-//         'driver_picture' => $driver_picture_path
-//     ]);
-//     exit;
-
-// } catch (PDOException $e) {
-//     if (isset($conn) && $conn->inTransaction()) {
-//         $conn->rollBack();
-//     }
-
-    http_response_code(500);
-    echo json_encode([
-        'status'  => 'error',
-        'message' => 'Unexpected error while processing driver & vehicle request.',
-        'sqlMessage' => trim($message),
-        'debug'   => $e->getMessage(),
-        'input'   => $debug_payload   // <-- ΠΟΛΥ ΧΡΗΣΙΜΟ ΤΩΡΑ
-    ]);
-        
-    exit;
+      showSignupMessage(data.message || 'Vehicle registered successfully!', 'success');
+      setTimeout(() => {
+        window.location.href = 'company_request_doc.html';
+      }, 1000);
+    } else {
+      let msg = data.message || 'Submission failed';
+      showSignupMessage(msg, 'error');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Continue';
+    }
+  })
+  .catch(error => {
+    console.error('Fetch error:', error);
+    showSignupMessage('Network error. Please check your connection and try again.', 'error');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Continue';
+  });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+  const submitBtn = document.getElementById('submitBtn');
+  
+  if (submitBtn) {
+    submitBtn.addEventListener('click', function(e) {
+     
+      if (e && e.preventDefault) e.preventDefault();
+      submitDriverVehicleRequest();
+    });
+  }
+});

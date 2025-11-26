@@ -44,7 +44,7 @@ if (!$photoExterior || $photoExterior['error'] !== UPLOAD_ERR_OK) {
 $interiorName = $photoInterior['name'];
 $exteriorName = $photoExterior['name'];
 
-$sql = "{CALL [eioann09].[registerDriverWithVehicle](?,?,?,?,?,?,?,?,?,?)}";
+$sql = "{CALL [eioann09].[registerCompanyWithVehicle](?,?,?,?,?,?,?,?,?,?,?)}";
 
 try {
     $db   = new Database();
@@ -61,7 +61,7 @@ try {
     $stmt->bindValue(8,  (int)$luggage_weight,    PDO::PARAM_INT);
     $stmt->bindValue(9,  $interiorName,           PDO::PARAM_STR);
     $stmt->bindValue(10, $exteriorName,           PDO::PARAM_STR);
-    
+    $stmt->bindValue(11, $users_id,           PDO::PARAM_INT);
     $stmt->execute();
     
  
@@ -77,11 +77,7 @@ try {
     
     $vehicle_id    = $row['new_vehicle_id'] ?? $row['vehicle_id'] ?? null;
     $error_message = $row['error_message']   ?? null;
-    // Get the newly created vehicle_id
-    $vehicle_id = $conn->lastInsertId();
 
-    // ✅ CRITICAL: Save vehicle_id to PHP session
-    $_SESSION['vehicle_id'] = $vehicle_id;
     if ($error_message) {
         echo json_encode([
             'success' => false, 
