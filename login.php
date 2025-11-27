@@ -1,4 +1,5 @@
 <?php
+session_start();
 
 require 'connect.php';  
 
@@ -81,6 +82,10 @@ try {
 
     $roleStmt->closeCursor();
 
+    // Store in session
+    $_SESSION['users_id'] = $users_id;
+    $_SESSION['username'] = $username;
+    $_SESSION['role'] = $role_type;
 
     echo json_encode([
         'status'   => 'success',

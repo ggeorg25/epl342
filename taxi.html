@@ -105,7 +105,12 @@
         <input type="hidden" name="redirect" value="1">
 
        
-        <div id="map" style="height: 500px; width: 100%; border-radius: 8px; margin-top: 20px; margin-bottom: 20px;"></div>
+        <div id="map" style="height: 500px; width: 100%; border-radius: 8px; margin-top: 20px; margin-bottom: 10px;"></div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+          <button type="button" class="btn-secondary" onclick="clearAllPoints()" style="flex: 1;">🗑️ Clear Points</button>
+          <button type="button" class="btn-secondary" onclick="returnToUserLocation()" style="flex: 1;">📍 My Location</button>
+        </div>
 
         <div class="button-row">
           <button type="submit" class="btn-primary">Continue</button>
@@ -120,8 +125,8 @@
   <!-- Leaflet JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
-  <script src="map.js?v=5"></script>
-  <script src="taxi.js?v=5"></script>
+  <script src="map.js?v=7"></script>
+  <script src="taxi.js?v=7"></script>
 </body>
 </html>
 

@@ -8,13 +8,10 @@ if (isset($_SESSION['selected_service_type'])) {
     $db = new Database();
     $conn = $db->getConnection();
     if ($conn) {
-      $stmt = $conn->prepare('SELECT ride_type FROM SERVICE_TYPE WHERE service_type_id = ?');
+      $stmt = $conn->prepare('{CALL GetServiceTypeName(?, ?)}');
       $stmt->bindParam(1, $_SESSION['selected_service_type'], PDO::PARAM_INT);
+      $stmt->bindParam(2, $service_type_name, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 100);
       $stmt->execute();
-      $row = $stmt->fetch(PDO::FETCH_ASSOC);
-      if ($row && isset($row['ride_type'])) {
-        $service_type_name = $row['ride_type'];
-      }
       $stmt->closeCursor();
     }
   } catch (Exception $e) {
