@@ -113,7 +113,7 @@ function submitDriverVehicleRequest() {
   formData.append('photo_interior', interiorFile);
   formData.append('photo_exterior', exteriorFile);
 
-  fetch('company_request.php', {
+  fetch('vehicle_request.php', {
     method: 'POST',
     body: formData
   })
@@ -149,7 +149,7 @@ function submitDriverVehicleRequest() {
     console.log('PARSED JSON:', data);
 
     if (data.success) {
-     
+      // ✅ SAVE vehicle_id FROM RESPONSE
       const vehicleIdFromResponse = data.vehicle_id || data.new_vehicle_id;
 
       if (vehicleIdFromResponse) {
@@ -162,7 +162,7 @@ function submitDriverVehicleRequest() {
 
       showSignupMessage(data.message || 'Vehicle registered successfully!', 'success');
       setTimeout(() => {
-        window.location.href = 'company_request_doc.html';
+        window.location.href = 'vehicle_doc_request.html';
       }, 1000);
     } else {
       let msg = data.message || 'Submission failed';
@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   if (submitBtn) {
     submitBtn.addEventListener('click', function(e) {
-     
+      // 🔴 IMPORTANT: prevent normal form submit (page reload)
       if (e && e.preventDefault) e.preventDefault();
       submitDriverVehicleRequest();
     });

@@ -1,11 +1,10 @@
 <?php
-session_start();
-
 require 'connect.php';  
 
 header('Content-Type: application/json');
 
-
+// ΞΕΚΙΝΑ session
+session_start();
 
 $json = trim(file_get_contents("php://input"));
 $data = json_decode($json);
@@ -16,8 +15,8 @@ if ($data === null) {
     exit;
 }
 
-$email          = $data->email    ;
-$password_login = $data->password ;
+$email          = $data->email    ?? '';
+$password_login = $data->password ?? '';
 
 if ($email === '' || $password_login === '') {
     echo json_encode([
@@ -30,7 +29,7 @@ if ($email === '' || $password_login === '') {
 try {
     $db   = new Database();
     $conn = $db->getConnection();
-    
+
     $sql = "{CALL [eioann09].[getHashedPassword](?)}";
     $stmt = $conn->prepare($sql);
     $stmt->bindParam(1, $email, PDO::PARAM_STR);
@@ -39,7 +38,6 @@ try {
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$row) {
-     
         echo json_encode([
             'status'  => 'error',
             'message' => 'Wrong credentials'
@@ -51,7 +49,6 @@ try {
     $username    = $row['username'];
     $stored_hash = $row['password_hashed'];
 
-  
     if (!password_verify($password_login, $stored_hash)) {
         echo json_encode([
             'status'  => 'error',
@@ -60,47 +57,43 @@ try {
         exit;
     }
 
-
     $stmt->closeCursor(); 
 
+    // LogInUser
     $logSql = "{CALL [eioann09].[LogInUser](?)}";
     $logStmt = $conn->prepare($logSql);
     $logStmt->bindParam(1, $users_id, PDO::PARAM_INT);
     $logStmt->execute();
     $logStmt->closeCursor();
 
-
+    // Βρες ρόλο
     $roleSql = "{CALL [eioann09].[getRoleType](?)}";
     $roleStmt = $conn->prepare($roleSql);
     $roleStmt->bindParam(1, $users_id, PDO::PARAM_INT);
     $roleStmt->execute();
 
-
     $row = $roleStmt->fetch(PDO::FETCH_ASSOC);
-    $role_type= $row['type_r'];
-
+    $role_type = $row['type_r'] ?? null;
 
     $roleStmt->closeCursor();
 
-    // Store in session
     $_SESSION['users_id'] = $users_id;
     $_SESSION['username'] = $username;
-    $_SESSION['role'] = $role_type;
+    $_SESSION['role']     = $role_type;
 
+    
     echo json_encode([
         'status'   => 'success',
         'message'  => 'Login successful!',
         'users_id' => $users_id,
         'username' => $username,
-        'role'  => $role_type
+        'role'     => $role_type
     ]);
-
 
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode([
         'status'  => 'error',
-        'message' => 'Unexpected error while logging in. Please try again later.',
-    
+        'message' => 'Unexpected error while logging in. Please try again later.'
     ]);
 }

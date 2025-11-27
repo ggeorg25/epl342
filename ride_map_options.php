@@ -38,6 +38,7 @@ $sessionData = array(
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="ride_map_options.css">
+  <!-- maps not required on this page (leaflet removed) -->
 </head>
 
 <body>
@@ -83,6 +84,7 @@ $sessionData = array(
   const dropoffLng = sessionData.dropoffLng;
 </script>
 
+<!-- Page scripts -->
 <script src="ride_map_options.js"></script>
 
 <script>
@@ -91,6 +93,9 @@ $sessionData = array(
   loadAddresses(pickupLat, pickupLng, dropoffLat, dropoffLng);
   loadVehicleTypes(serviceType, pickupLat, pickupLng);
 </script>
+
+</body>
+</html>
 
 </body>
 </html>
