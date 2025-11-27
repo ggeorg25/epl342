@@ -29,10 +29,10 @@
         <div class="form-group">
           <label for="service_type">Ride Type</label>
           <select id="service_type" name="service_type">
-            <option value="1">Standard passenger ride</option>
-            <option value="2">Premium passenger ride</option>
-            <option value="3">Light cargo transport</option>
-            <option value="4">Heavy cargo transport</option>
+            <option value="11">Standard passenger ride</option>
+            <option value="12">Premium passenger ride</option>
+            <option value="13">Light cargo transport</option>
+            <option value="14">Heavy cargo transport</option>
           </select>
         </div>
 
@@ -57,10 +57,7 @@
             <br><br>
      
             <div class="button-row">
-                <button 
-                  type="button" 
-                  class="btn-primary" 
-                  onclick="window.location.href='vehicle_options.html'">
+                <button type="submit" class="btn-primary">
                   Continue
                 </button>
               </div>
@@ -69,8 +66,69 @@
     </section>
   </main>
 
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const storedUsername = localStorage.getItem('username') || 'User';
+      const navbarUsernameEl = document.getElementById('navbar-username');
+      if (navbarUsernameEl) navbarUsernameEl.textContent = storedUsername;
 
- 
-  
+      const form = document.getElementById('passenger-form');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const serviceType = document.getElementById('service_type').value;
+        const rentalStart = document.getElementById('start').value;
+        const rentalEnd = document.getElementById('end').value;
+
+        console.log('Form values captured:');
+        console.log('serviceType:', serviceType);
+        console.log('rentalStart:', rentalStart);
+        console.log('rentalEnd:', rentalEnd);
+
+        if (!rentalStart || !rentalEnd) {
+          alert('Please select both start and end dates.');
+          return;
+        }
+
+        // Validate end is after start
+        if (new Date(rentalEnd) <= new Date(rentalStart)) {
+          alert('End date must be after start date.');
+          return;
+        }
+
+        // Convert datetime-local format (YYYY-MM-DDTHH:MM) to SQL Server format (YYYY-MM-DD HH:MM:SS)
+        const formatForSQL = (datetimeLocal) => {
+          return datetimeLocal.replace('T', ' ') + ':00';
+        };
+
+        // Save to session via PHP
+        const body = new URLSearchParams();
+        body.append('service', 'rental');
+        body.append('service_type', serviceType);
+        body.append('rental_start', formatForSQL(rentalStart));
+        body.append('rental_end', formatForSQL(rentalEnd));
+
+        console.log('Sending to set_session.php:', body.toString());
+
+        fetch('set_session.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: body.toString()
+        })
+        .then(res => res.json())
+        .then(resp => {
+          if (resp && resp.success) {
+            window.location.href = 'vehicle_options.html';
+          } else {
+            alert('Could not save session. Try again.');
+          }
+        })
+        .catch(err => {
+          console.error('Session save error', err);
+          alert('Network error saving session.');
+        });
+      });
+    });
+  </script>
 </body>
 </html>

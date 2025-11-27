@@ -97,7 +97,7 @@ try {
         if (count($ids) > 0) {
             $in = implode(',', array_map('intval', $ids));
             try {
-                $sql2 = "SELECT vehicle_type_id, name FROM VehicleType WHERE vehicle_type_id IN ($in)";
+                $sql2 = "SELECT vehicle_type_id, name FROM Vehicle_Type WHERE vehicle_type_id IN ($in)";
                 $stmt2 = $conn->prepare($sql2);
                 $stmt2->execute();
                 $names = [];

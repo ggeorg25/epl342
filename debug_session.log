@@ -1,0 +1,272 @@
+
+
+=== 2025-11-27 10:12:11 ===
+POST data received:
+Array
+(
+    [service] => rental
+    [service_type] => 2
+    [rental_start] => 2025-11-29T10:00
+    [rental_end] => 2025-11-30T10:00
+)
+
+Session after save:
+Array
+(
+    [users_id] => 10050
+    [username] => giorgosgeor
+    [role] => passenger
+    [selected_service] => rental
+    [selected_service_type] => 2
+    [pickup_lat] => 35.14413661345169
+    [pickup_lng] => 33.40751847736988
+    [dropoff_lat] => 35.147137012860256
+    [dropoff_lng] => 33.41395563167083
+    [selected_vehicle_type_id] => 1
+    [test] => Session is working!
+    [timestamp] => 1764234094
+    [rental_start] => 2025-11-29T10:00
+    [rental_end] => 2025-11-30T10:00
+)
+
+
+
+=== 2025-11-27 10:13:54 ===
+POST data received:
+Array
+(
+    [service] => rental
+    [service_type] => 2
+    [rental_start] => 2025-11-29T10:00
+    [rental_end] => 2025-11-30T10:00
+)
+
+Session after save:
+Array
+(
+    [users_id] => 10050
+    [username] => giorgosgeor
+    [role] => passenger
+    [selected_service] => rental
+    [selected_service_type] => 2
+    [pickup_lat] => 35.14413661345169
+    [pickup_lng] => 33.40751847736988
+    [dropoff_lat] => 35.147137012860256
+    [dropoff_lng] => 33.41395563167083
+    [selected_vehicle_type_id] => 1
+    [test] => Session is working!
+    [timestamp] => 1764234094
+    [rental_start] => 2025-11-29T10:00
+    [rental_end] => 2025-11-30T10:00
+)
+
+
+
+=== 2025-11-27 10:15:28 ===
+POST data received:
+Array
+(
+    [service] => rental
+    [service_type] => 12
+    [rental_start] => 2025-10-29 10:10:00
+    [rental_end] => 2025-11-30 10:10:00
+)
+
+Session after save:
+Array
+(
+    [users_id] => 10050
+    [username] => giorgosgeor
+    [role] => passenger
+    [selected_service] => rental
+    [selected_service_type] => 12
+    [pickup_lat] => 35.14413661345169
+    [pickup_lng] => 33.40751847736988
+    [dropoff_lat] => 35.147137012860256
+    [dropoff_lng] => 33.41395563167083
+    [selected_vehicle_type_id] => 1
+    [test] => Session is working!
+    [timestamp] => 1764234094
+    [rental_start] => 2025-10-29 10:10:00
+    [rental_end] => 2025-11-30 10:10:00
+)
+
+
+
+=== 2025-11-27 10:21:20 ===
+POST data received:
+Array
+(
+    [service] => driver
+    [service_type] => 11
+    [pickup_lat] => 35.14358214199728
+    [pickup_lng] => 33.40605938906162
+    [dropoff_lat] => 35.14730194431772
+    [dropoff_lng] => 33.41590823514214
+)
+
+Session after save:
+Array
+(
+    [users_id] => 10050
+    [username] => giorgosgeor
+    [role] => passenger
+    [selected_service] => driver
+    [selected_service_type] => 11
+    [pickup_lat] => 35.14358214199728
+    [pickup_lng] => 33.40605938906162
+    [dropoff_lat] => 35.14730194431772
+    [dropoff_lng] => 33.41590823514214
+    [selected_vehicle_type_id] => 1
+    [test] => Session is working!
+    [timestamp] => 1764234094
+    [rental_start] => 2025-10-29 10:10:00
+    [rental_end] => 2025-11-30 10:10:00
+)
+
+
+
+=== 2025-11-27 10:21:22 ===
+POST data received:
+Array
+(
+    [selected_vehicle_type_id] => 1
+)
+
+Session after save:
+Array
+(
+    [users_id] => 10050
+    [username] => giorgosgeor
+    [role] => passenger
+    [selected_service] => driver
+    [selected_service_type] => 11
+    [pickup_lat] => 35.14358214199728
+    [pickup_lng] => 33.40605938906162
+    [dropoff_lat] => 35.14730194431772
+    [dropoff_lng] => 33.41590823514214
+    [selected_vehicle_type_id] => 1
+    [test] => Session is working!
+    [timestamp] => 1764234094
+    [rental_start] => 2025-10-29 10:10:00
+    [rental_end] => 2025-11-30 10:10:00
+)
+
+
+
+=== 2025-11-27 10:21:39 ===
+POST data received:
+Array
+(
+    [selected_vehicle_type_id] => 7
+)
+
+Session after save:
+Array
+(
+    [users_id] => 10050
+    [username] => giorgosgeor
+    [role] => passenger
+    [selected_service] => driver
+    [selected_service_type] => 11
+    [pickup_lat] => 35.14358214199728
+    [pickup_lng] => 33.40605938906162
+    [dropoff_lat] => 35.14730194431772
+    [dropoff_lng] => 33.41590823514214
+    [selected_vehicle_type_id] => 7
+    [test] => Session is working!
+    [timestamp] => 1764234094
+    [rental_start] => 2025-10-29 10:10:00
+    [rental_end] => 2025-11-30 10:10:00
+)
+
+
+
+=== 2025-11-27 10:22:09 ===
+POST data received:
+Array
+(
+    [selected_vehicle_type_id] => 1
+)
+
+Session after save:
+Array
+(
+    [users_id] => 10050
+    [username] => giorgosgeor
+    [role] => passenger
+    [selected_service] => driver
+    [selected_service_type] => 11
+    [pickup_lat] => 35.14358214199728
+    [pickup_lng] => 33.40605938906162
+    [dropoff_lat] => 35.14730194431772
+    [dropoff_lng] => 33.41590823514214
+    [selected_vehicle_type_id] => 1
+    [test] => Session is working!
+    [timestamp] => 1764234094
+    [rental_start] => 2025-10-29 10:10:00
+    [rental_end] => 2025-11-30 10:10:00
+)
+
+
+
+=== 2025-11-27 10:23:45 ===
+POST data received:
+Array
+(
+    [service] => rental
+    [service_type] => 11
+    [rental_start] => 2025-11-29 10:10:00
+    [rental_end] => 2025-11-30 10:10:00
+)
+
+Session after save:
+Array
+(
+    [users_id] => 10050
+    [username] => giorgosgeor
+    [role] => passenger
+    [selected_service] => rental
+    [selected_service_type] => 11
+    [pickup_lat] => 35.14358214199728
+    [pickup_lng] => 33.40605938906162
+    [dropoff_lat] => 35.14730194431772
+    [dropoff_lng] => 33.41590823514214
+    [selected_vehicle_type_id] => 1
+    [test] => Session is working!
+    [timestamp] => 1764234094
+    [rental_start] => 2025-11-29 10:10:00
+    [rental_end] => 2025-11-30 10:10:00
+)
+
+
+
+=== 2025-11-27 10:25:28 ===
+POST data received:
+Array
+(
+    [service] => rental
+    [service_type] => 11
+    [rental_start] => 2025-11-29 10:10:00
+    [rental_end] => 2025-11-30 10:10:00
+)
+
+Session after save:
+Array
+(
+    [users_id] => 10050
+    [username] => giorgosgeor
+    [role] => passenger
+    [selected_service] => rental
+    [selected_service_type] => 11
+    [pickup_lat] => 35.14358214199728
+    [pickup_lng] => 33.40605938906162
+    [dropoff_lat] => 35.14730194431772
+    [dropoff_lng] => 33.41590823514214
+    [selected_vehicle_type_id] => 1
+    [test] => Session is working!
+    [timestamp] => 1764234094
+    [rental_start] => 2025-11-29 10:10:00
+    [rental_end] => 2025-11-30 10:10:00
+)
+
