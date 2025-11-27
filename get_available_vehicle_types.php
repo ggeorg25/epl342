@@ -97,8 +97,10 @@ try {
         if (count($ids) > 0) {
             $in = implode(',', array_map('intval', $ids));
             try {
-                $sql2 = "SELECT vehicle_type_id, name FROM Vehicle_Type WHERE vehicle_type_id IN ($in)";
+                // Use stored procedure to get vehicle type names
+                $sql2 = "{CALL [eioann09].[GetVehicleTypeNamesByIds](?)}";
                 $stmt2 = $conn->prepare($sql2);
+                $stmt2->bindParam(1, $in, PDO::PARAM_STR);
                 $stmt2->execute();
                 $names = [];
                 while ($r = $stmt2->fetch(PDO::FETCH_ASSOC)) {

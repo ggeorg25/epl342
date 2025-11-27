@@ -124,6 +124,60 @@
   <!-- Leaflet JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
+  <script>
+    // Filter ride type options based on selected service
+    document.addEventListener('DOMContentLoaded', () => {
+      const serviceRadios = document.querySelectorAll('input[name="service"]');
+      const serviceTypeSelect = document.getElementById('service_type');
+      
+      // Store all options
+      const allOptions = {
+        passenger: [
+          { value: '11', text: 'Standard passenger ride' },
+          { value: '12', text: 'Premium passenger ride' },
+          { value: '15', text: 'Multi-hop transport' }
+        ],
+        cargo: [
+          { value: '13', text: 'Light cargo transport' },
+          { value: '14', text: 'Heavy cargo transport' }
+        ]
+      };
+      
+      function updateRideTypeOptions() {
+        const selectedService = document.querySelector('input[name="service"]:checked').value;
+        
+        // Clear current options
+        serviceTypeSelect.innerHTML = '';
+        
+        // Add appropriate options
+        let optionsToShow = [];
+        if (selectedService === 'mini_van') {
+          // Mini van: only show cargo options
+          optionsToShow = allOptions.cargo;
+        } else {
+          // Other services: show passenger options
+          optionsToShow = allOptions.passenger;
+        }
+        
+        // Populate the select with filtered options
+        optionsToShow.forEach(opt => {
+          const option = document.createElement('option');
+          option.value = opt.value;
+          option.textContent = opt.text;
+          serviceTypeSelect.appendChild(option);
+        });
+      }
+      
+      // Update on service change
+      serviceRadios.forEach(radio => {
+        radio.addEventListener('change', updateRideTypeOptions);
+      });
+      
+      // Initialize on page load
+      updateRideTypeOptions();
+    });
+  </script>
+
   <script src="map.js?v=7"></script>
   <script src="taxi.js?v=7"></script>
 </body>
