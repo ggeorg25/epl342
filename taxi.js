@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", () => {
   const demoEl = document.getElementById("demo");
 
@@ -29,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     if (window.map) {
-      window.map.setCenter({ lat, lng });
+      panTo(lat, lng);
     }
   }
 
@@ -61,14 +60,32 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      localStorage.setItem("selected_service", service);
-      localStorage.setItem("selected_service_type", serviceType);
-      localStorage.setItem("pickup_lat", pickupLat);
-      localStorage.setItem("pickup_lng", pickupLng);
-      localStorage.setItem("dropoff_lat", dropoffLat);
-      localStorage.setItem("dropoff_lng", dropoffLng);
+      // send values to server-side session and then redirect to PHP page
+      const body = new URLSearchParams();
+      body.append('service', service);
+      body.append('service_type', serviceType);
+      body.append('pickup_lat', pickupLat);
+      body.append('pickup_lng', pickupLng);
+      body.append('dropoff_lat', dropoffLat);
+      body.append('dropoff_lng', dropoffLng);
 
-      window.location.href = "ride_map_options.html";
+      fetch('set_session.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+      })
+      .then(res => res.json())
+      .then(resp => {
+        if (resp && resp.success) {
+          window.location.href = 'ride_map_options.php';
+        } else {
+          alert('Could not save session on server. Try again.');
+        }
+      })
+      .catch(err => {
+        console.error('Session save error', err);
+        alert('Network error saving session.');
+      });
     });
   }
 });
@@ -111,15 +128,16 @@ window.initTaxiMap = function () {
 
   const defaultCenter = { lat: 35.1264, lng: 33.4299 };
 
-  const map = new google.maps.Map(mapDiv, {
-    zoom: 16,
+  // Initialize Leaflet map
+  initMap("map", {
     center: defaultCenter,
+    zoom: 16
   });
 
-  
-  window.map = map;
+  // Make map global
+  const leafletMap = window.map;
 
- 
+  // Get user location
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -135,7 +153,6 @@ window.initTaxiMap = function () {
       },
       (error) => {
         console.warn("Geolocation error:", error);
-      
       }
     );
   }
@@ -155,9 +172,10 @@ window.initTaxiMap = function () {
   const pickupDisplay = document.getElementById("pickup_display");
   const dropoffDisplay = document.getElementById("dropoff_display");
 
-  map.addListener("click", (e) => {
-    const lat = e.latLng.lat();
-    const lng = e.latLng.lng();
+  // Handle map click
+  leafletMap.on("click", (e) => {
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
 
     const clickModeEl = document.querySelector('input[name="clickMode"]:checked');
     const mode = clickModeEl ? clickModeEl.value : "pickup";
