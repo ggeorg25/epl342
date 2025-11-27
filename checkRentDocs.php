@@ -14,13 +14,11 @@ if ($data === null) {
 
 
 $users_id   = $data->users_id   ?? ($_SESSION['users_id']   ?? null);
-$vehicle_id = $data->vehicle_id ?? ($_SESSION['vehicle_id'] ?? null);
-
 
 if ($users_id === null || $users_id === '') {
     echo json_encode([
         'status'   => 'no_docs',
-        'message'  => 'We could not find any driver or vehicle information for your account.'
+        'message'  => 'We could not find any driver information for your account.'
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }
@@ -52,50 +50,24 @@ try {
     error_log("Driver docs to correct: " . count($driverDocsToCorrect));
 
 
-    $vehicleDocsToCorrect = [];
-    $vehicleStatus = 'no_issues';
-    
-    if ($vehicle_id !== null && $vehicle_id !== '') {
-        $sqlVehicle = "{CALL [eioann09].[getVehicleDocsResubmit](?)}";
-        $stmtVehicle = $conn->prepare($sqlVehicle);
-        $stmtVehicle->bindParam(1, $vehicle_id, PDO::PARAM_INT);
-        $stmtVehicle->execute();
-        $vehicleRows = $stmtVehicle->fetchAll(PDO::FETCH_ASSOC);
-        $stmtVehicle->closeCursor();
-
-        if (!empty($vehicleRows)) {
-            $statusCode = $vehicleRows[0]['StatusCode'] ?? null;
-            
-            if ($statusCode === 'SUCCESS') {
-                $vehicleDocsToCorrect = $vehicleRows;
-                $vehicleStatus = 'has_issues';
-            }
-        }
-    }
-
-    error_log("Vehicle docs to correct: " . count($vehicleDocsToCorrect));
-
 
     $hasDriverIssues = !empty($driverDocsToCorrect);
-    $hasVehicleIssues = !empty($vehicleDocsToCorrect);
+  
 
-    if ($hasDriverIssues || $hasVehicleIssues) {
+    if ($hasDriverIssues) {
  
         $messages = [];
         if ($hasDriverIssues) {
             $messages[] = count($driverDocsToCorrect) . " driver document(s) need correction.";
         }
-        if ($hasVehicleIssues) {
-            $messages[] = count($vehicleDocsToCorrect) . " vehicle document(s) need correction.";
-        }
+ 
+        
 
         echo json_encode([
             'status'        => 'has_issues',
             'message'       => implode(' ', $messages),
             'driverDocs'    => $driverDocsToCorrect,
-            'vehicleDocs'   => $vehicleDocsToCorrect,
             'users_id'      => $users_id,
-            'vehicle_id'    => $vehicle_id
         ], JSON_UNESCAPED_UNICODE);
       
     } else {
@@ -107,17 +79,8 @@ try {
         $stmtCheck->execute(); 
         $driverCount = $stmtCheck->fetch(PDO::FETCH_ASSOC)['DOCS'];
         
-        $vehicleCount = 0;
-        if ($vehicle_id !== null && $vehicle_id !== '') {
-            $sqlCheckVehicle = "{CALL ifAnyVehicleDocs(?)}";
-            $stmtCheckV = $conn->prepare($sqlCheckVehicle);
-            $stmtCheckV->bindParam(1, $vehicle_id, PDO::PARAM_INT);
-            $stmtCheckV->execute(); 
-            $vehicleCount = $stmtCheckV->fetch(PDO::FETCH_ASSOC)['DOCS'];
-
-        }
-
-        if ($driverCount == 0 && $vehicleCount == 0) {
+      
+        if ($driverCount == 0) {
             echo json_encode([
                 'status'  => 'no_docs',
                 'message' => 'You have not submitted any documents yet.'

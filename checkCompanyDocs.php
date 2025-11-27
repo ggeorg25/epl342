@@ -30,7 +30,7 @@ try {
     $db   = new Database();
     $conn = $db->getConnection();
 
-    // 2) Call stored procedure for vehicle docs per company_id
+    
     $sql = "{CALL [eioann09].[CheckVehicleCOMPANYDocsStatus](?)}";
     $stmt = $conn->prepare($sql);
     $stmt->bindParam(1, $company_id, PDO::PARAM_INT);
@@ -38,7 +38,7 @@ try {
     $vehicleRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $stmt->closeCursor();
 
-    // 3) Check if we got any results
+
     if (empty($vehicleRows)) {
         echo json_encode([
             'status'     => 'no_docs',
@@ -48,10 +48,9 @@ try {
         exit;
     }
 
-    // 4) Get the StatusCode from the first row
+  
     $statusCode = $vehicleRows[0]['StatusCode'] ?? 'OTHER';
 
-    // 5) Handle based on StatusCode from stored procedure
     switch ($statusCode) {
         case 'NO_DOCS':
           
@@ -62,6 +61,15 @@ try {
             ], JSON_UNESCAPED_UNICODE);
             break;
 
+            case 'CAN_SUMBIT_AGAIN':
+          
+                echo json_encode([
+                    'status'     => 'no_docs',
+                    'company_id' => (int)$company_id,
+                    'message'    => $vehicleRows[0]['MessageText'] ?? 'You have not submitted any company vehicle documents yet.'
+                ], JSON_UNESCAPED_UNICODE);
+                break;
+
         case 'ALL_P':
 
             echo json_encode([
@@ -71,6 +79,7 @@ try {
                 'vehicleDocs' => $vehicleRows
             ], JSON_UNESCAPED_UNICODE);
             break;
+        
 
         case 'HAS_ISSUES':
             

@@ -39,7 +39,7 @@
           <p>Want to join One-Stop Ride-Hail as a driver? Start here.</p>
         </a>
         
-        <!-- ADD THIS DIV FOR DRIVER/VEHICLE MESSAGES -->
+       
         <div id="driver-vehicle-message" style="margin-top: 10px; white-space: pre-line;"></div>
         
         <script>
@@ -50,11 +50,12 @@
             link.addEventListener('click', function (e) {
               e.preventDefault();
         
-              // Clear old message
+             
               msgDiv.textContent = '';
               msgDiv.style.color = 'red';
         
-              fetch('checkUsersDocs.php', {
+          
+              fetch('checkCanBeDriver.php', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json'
@@ -63,14 +64,40 @@
               })
               .then(response => response.json())
               .then(data => {
-                console.log('Response from PHP:', data);
+                console.log('CanBeDriver Response:', data);
+        
+                if (!data.success) {
+               
+                  msgDiv.style.color = 'red';
+                  msgDiv.style.fontWeight = 'bold';
+                  msgDiv.textContent = data.message || 'You cannot register as a driver at this time.';
+                  return; // Stop here
+                }
+        
+                
+                return fetch('checkUsersDocs.php', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({})
+                });
+              })
+              .then(response => {
+                if (!response) return;
+                return response.json();
+              })
+              .then(data => {
+                if (!data) return; 
+                
+                console.log('Document Status Response:', data);
         
                 if (data.status === 'no_docs') {
-                  // ✅ No documents submitted yet - Allow redirect to initial submission
+               
                   window.location.href = 'driver_doc_request.html';
         
                 } else if (data.status === 'has_issues') {
-                  // 🔄 Some documents have status 'C' (correction needed) - REDIRECT to resubmit page
+                
                   msgDiv.style.color = 'blue';
                   msgDiv.style.fontWeight = 'bold';
                   msgDiv.textContent = 'Redirecting to resubmit page...';
@@ -80,19 +107,19 @@
                   }, 500);
         
                 } else if (data.status === 'pending') {
-                  // ⏳ All documents are pending approval - BLOCK redirect
+              
                   msgDiv.style.color = 'orange';
                   msgDiv.style.fontWeight = 'bold';
                   msgDiv.textContent = data.message || 'All documents are pending approval.';
         
                 } else if (data.status === 'error') {
-                  // ⚠️ Error occurred
+                
                   msgDiv.style.color = 'red';
                   msgDiv.style.fontWeight = 'bold';
                   msgDiv.textContent = data.message || 'Something went wrong.';
                   
                 } else {
-                  // Unknown status - BLOCK redirect
+                 
                   msgDiv.style.color = 'red';
                   msgDiv.style.fontWeight = 'bold';
                   msgDiv.textContent = 'Unexpected response. Please try again later.';
@@ -121,69 +148,96 @@
             const msgDiv = document.getElementById('company-message');
         
             link.addEventListener('click', function (e) {
-              e.preventDefault(); // don't go to the page yet
+              e.preventDefault();
         
-              // Clear old message
+           
               msgDiv.textContent = '';
               msgDiv.style.color = 'red';
         
-              fetch('checkCompanyDocs.php', {
+      
+              fetch('checkCanBeDriver.php', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({})
               })
-                .then(response => response.json())
-                .then(data => {
-                  console.log('Response from PHP:', data);
-                  
-                  if (data.status === 'no_docs') {
-                    // ✅ No documents submitted yet - Allow redirect to initial submission
-                    window.location.href = 'company_request.html';
-                    
-                  } else if (data.status === 'all_pending') {
-                    // ⏳ All documents are status 'P' (pending) - BLOCK redirect
-                    msgDiv.style.color = 'orange';
-                    msgDiv.style.fontWeight = 'bold';
-                    msgDiv.textContent = data.message || 'You have submitted all the vehicle information. Wait for approval...';
-                    
-                  } else if (data.status === 'has_issues') {
-                    // 🔄 Some documents have status 'C' (correction needed) - REDIRECT to resubmit page
-                    msgDiv.style.color = 'blue';
-                    msgDiv.style.fontWeight = 'bold';
-                    msgDiv.textContent = 'Redirecting to resubmit page...';
-                    
-                    setTimeout(() => {
-                      window.location.href = 'company_resubmit.html';
-                    }, 500);
-                    
-                  } else if (data.status === 'other') {
-                    // ℹ️ Other mixed status - BLOCK redirect
-                    msgDiv.style.color = 'blue';
-                    msgDiv.style.fontWeight = 'bold';
-                    msgDiv.textContent = data.message || 'There is some status information for your documents.';
-                    
-                  } else if (data.status === 'error') {
-                    // ⚠️ Error occurred
-                    msgDiv.style.color = 'red';
-                    msgDiv.style.fontWeight = 'bold';
-                    msgDiv.textContent = data.message || 'Something went wrong. Please try again later.';
-                    
-                  } else {
-                    // Unknown status - BLOCK redirect just to be safe
-                    msgDiv.style.color = 'red';
-                    msgDiv.style.fontWeight = 'bold';
-                    msgDiv.textContent = 'Unexpected response. Please try again later.';
-                    console.error('Unknown status:', data.status, data);
-                  }
-                })
-                .catch(err => {
-                  console.error('Fetch error:', err);
+              .then(response => response.json())
+              .then(data => {
+                console.log('CanBeDriver Response:', data);
+        
+                if (!data.success) {
+
                   msgDiv.style.color = 'red';
                   msgDiv.style.fontWeight = 'bold';
-                  msgDiv.textContent = 'Connection error. Please try again later.';
+                  msgDiv.textContent = data.message || 'You cannot register as a company at this time.';
+                  return; // Stop here
+                }
+        
+       
+                return fetch('checkCompanyDocs.php', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({})
                 });
+              })
+              .then(response => {
+                if (!response) return; // If blocked by CanBeDriver check
+                return response.json();
+              })
+              .then(data => {
+                if (!data) return; // If blocked by CanBeDriver check
+                
+                console.log('Company Response:', data);
+                
+                if (data.status === 'no_docs') {
+                  // ✅ No documents submitted yet - Allow redirect
+                  window.location.href = 'company_request.html';
+                  
+                } else if (data.status === 'all_pending') {
+                  // ⏳ All documents pending - BLOCK
+                  msgDiv.style.color = 'orange';
+                  msgDiv.style.fontWeight = 'bold';
+                  msgDiv.textContent = data.message || 'You have submitted all the vehicle information. Wait for approval...';
+                  
+                } else if (data.status === 'has_issues') {
+                  // 🔄 Documents need correction - Redirect to resubmit
+                  msgDiv.style.color = 'blue';
+                  msgDiv.style.fontWeight = 'bold';
+                  msgDiv.textContent = 'Redirecting to resubmit page...';
+                  
+                  setTimeout(() => {
+                    window.location.href = 'company_resubmit.html';
+                  }, 500);
+                  
+                } else if (data.status === 'other') {
+                  // ℹ️ Other status - BLOCK
+                  msgDiv.style.color = 'blue';
+                  msgDiv.style.fontWeight = 'bold';
+                  msgDiv.textContent = data.message || 'There is some status information for your documents.';
+                  
+                } else if (data.status === 'error') {
+                  // ⚠️ Error occurred
+                  msgDiv.style.color = 'red';
+                  msgDiv.style.fontWeight = 'bold';
+                  msgDiv.textContent = data.message || 'Something went wrong. Please try again later.';
+                  
+                } else {
+                  // Unknown status - BLOCK
+                  msgDiv.style.color = 'red';
+                  msgDiv.style.fontWeight = 'bold';
+                  msgDiv.textContent = 'Unexpected response. Please try again later.';
+                  console.error('Unknown status:', data.status, data);
+                }
+              })
+              .catch(err => {
+                console.error('Fetch error:', err);
+                msgDiv.style.color = 'red';
+                msgDiv.style.fontWeight = 'bold';
+                msgDiv.textContent = 'Connection error. Please try again later.';
+              });
             });
           });
         </script>

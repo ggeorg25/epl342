@@ -109,14 +109,12 @@ try {
     error_log("Transaction started");
 
     $driver_docs = $_POST['driver_docs'] ?? [];
-    $vehicle_docs = $_POST['vehicle_docs'] ?? [];
-    $vehicle_id = $_POST['vehicle_id'] ?? null;
+  
 
     error_log("Driver docs count: " . count($driver_docs));
-    error_log("Vehicle docs count: " . count($vehicle_docs));
-    error_log("Vehicle ID: " . ($vehicle_id ?? 'NULL'));
 
-    if (empty($driver_docs) && empty($vehicle_docs)) {
+
+    if (empty($driver_docs)) {
         throw new Exception('No documents to process');
     }
 
@@ -124,7 +122,6 @@ try {
 
  
     if (!empty($driver_docs)) {
-        error_log("=== PROCESSING DRIVER DOCUMENTS ===");
         $sqlDriverDoc = "{CALL [eioann09].[UpdateDrDoc](?,?,?,?,?,?)}";
         $stmtDriverDoc = $conn->prepare($sqlDriverDoc);
 
@@ -213,133 +210,6 @@ try {
         }
     }
 
-    // ===================================================================
-    // PROCESS VEHICLE DOCUMENTS
-    // ===================================================================
-    if (!empty($vehicle_docs)) {
-        error_log("=== PROCESSING VEHICLE DOCUMENTS ===");
-        
-        if ($vehicle_id === null || $vehicle_id === '') {
-            throw new Exception('Vehicle ID is required for vehicle documents');
-        }
-
-        $sqlVehicleDoc = "{CALL [eioann09].[UpdateVehDoc](?,?,?,?,?,?)}";
-        $stmtVehicleDoc = $conn->prepare($sqlVehicleDoc);
-
-        foreach ($vehicle_docs as $idx => $doc) {
-            error_log("--- Processing vehicle doc index: $idx ---");
-            error_log("Vehicle doc data: " . print_r($doc, true));
-            
-            $v_doc_type_id = $doc['doc_type_id'] ?? null;
-            
-            if ($v_doc_type_id === null || $v_doc_type_id === '') {
-                error_log("Skipping vehicle doc $idx: missing doc_type_id");
-                continue;
-            }
-
-            $doc_code = $doc['doc_code'] ?? null;
-            $pub_date = $doc['publish_date'] ?? null;
-            $exp_date = $doc['exp_date'] ?? null;
-
-            error_log("Fields: doc_type=$v_doc_type_id, code=$doc_code, pub=$pub_date, exp=$exp_date");
-
-            if ($doc_code === null || $doc_code === '' || $pub_date === null || $pub_date === '') {
-                error_log("Skipping vehicle doc $idx: missing required fields");
-                continue;
-            }
-
-            // Validate dates
-            try {
-                $publishDate = new DateTime($pub_date);
-                $today = new DateTime();
-                $today->setTime(0, 0, 0);
-                
-                if ($publishDate > $today) {
-                    throw new Exception("Issue date cannot be in the future for vehicle document type $v_doc_type_id");
-                }
-
-                if (!empty($exp_date) && $exp_date !== '') {
-                    $expDate = new DateTime($exp_date);
-                    if ($expDate <= $publishDate) {
-                        throw new Exception("Expiration date must be after issue date for vehicle document type $v_doc_type_id");
-                    }
-                } else {
-                    $exp_date = null;
-                }
-            } catch (Exception $e) {
-                error_log("Date validation error: " . $e->getMessage());
-                throw $e;
-            }
-
-            // Process file upload
-            $fileInputName = "vehicle_docs_{$idx}_file";
-            error_log("Processing file upload: $fileInputName");
-            
-            try {
-                $filePath = processFileUpload($fileInputName, 'vehicle_docs', $vehicle_id, $v_doc_type_id);
-                error_log("File uploaded: $filePath");
-            } catch (Exception $e) {
-                error_log("File upload error: " . $e->getMessage());
-                throw $e;
-            }
-
-            // Call stored procedure
-            error_log("Calling UpdateVehDoc with: vehicle_id=$vehicle_id, code=$doc_code, type=$v_doc_type_id, pub=$pub_date, exp=" . ($exp_date ?? 'NULL') . ", file=$filePath");
-            
-            try {
-                $stmtVehicleDoc->bindValue(1, $vehicle_id, PDO::PARAM_INT);
-                $stmtVehicleDoc->bindValue(2, $doc_code, PDO::PARAM_STR);
-                $stmtVehicleDoc->bindValue(3, $v_doc_type_id, PDO::PARAM_INT);
-                $stmtVehicleDoc->bindValue(4, $pub_date, PDO::PARAM_STR);
-                
-                if ($exp_date === null) {
-                    $stmtVehicleDoc->bindValue(5, null, PDO::PARAM_NULL);
-                } else {
-                    $stmtVehicleDoc->bindValue(5, $exp_date, PDO::PARAM_STR);
-                }
-                
-                $stmtVehicleDoc->bindValue(6, $filePath, PDO::PARAM_STR);
-
-                $stmtVehicleDoc->execute();
-                $processedCount++;
-                
-                error_log("Successfully processed vehicle doc type $v_doc_type_id");
-            } catch (PDOException $e) {
-                error_log("Stored procedure error: " . $e->getMessage());
-                throw new Exception("Database error updating vehicle document type $v_doc_type_id: " . $e->getMessage());
-            }
-        }
-    }
-
-    if ($processedCount === 0) {
-        throw new Exception('No documents were processed. Please check your form data.');
-    }
-
-    $conn->commit();
-    error_log("Transaction committed. Processed $processedCount documents.");
-
-    echo json_encode([
-        'status'  => 'success',
-        'message' => "Successfully resubmitted $processedCount document(s). Status changed to Pending for review."
-    ]);
-    exit;
-
-} catch (PDOException $e) {
-    if (isset($conn) && $conn->inTransaction()) {
-        $conn->rollBack();
-        error_log("Transaction rolled back");
-    }
-
-    error_log("PDOException: " . $e->getMessage());
-    error_log("Stack trace: " . $e->getTraceAsString());
-    
-    http_response_code(500);
-    echo json_encode([
-        'status'  => 'error',
-        'message' => 'Database error while processing documents.',
-        'debug'   => $e->getMessage()
-    ]);
-    exit;
     
 } catch (Exception $e) {
     if (isset($conn) && $conn->inTransaction()) {

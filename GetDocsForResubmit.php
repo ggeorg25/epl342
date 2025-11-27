@@ -75,12 +75,9 @@ try {
                         
                         error_log("Row $index - StatusCode: " . ($statusCode ?? 'NULL') . ", v_doc_status: " . ($v_doc_status ?? 'NULL'));
                         
-                        // Status codes that need resubmission:
-                        // 'C' = Needs Correction/Rejected
-                        // Add other status codes as needed
+                       
                         $needsResubmission = [
-                            'C',           // Needs Correction
-                            'c',           // lowercase version
+                            'C'           
                         ];
                         
                         if ($statusCode === 'SUCCESS') {

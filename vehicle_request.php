@@ -77,10 +77,10 @@ try {
     
     $vehicle_id    = $row['new_vehicle_id'] ?? $row['vehicle_id'] ?? null;
     $error_message = $row['error_message']   ?? null;
-    // Get the newly created vehicle_id
+   
     $vehicle_id = $conn->lastInsertId();
 
-    // ✅ CRITICAL: Save vehicle_id to PHP session
+    
     $_SESSION['vehicle_id'] = $vehicle_id;
     if ($error_message) {
         echo json_encode([

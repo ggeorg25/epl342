@@ -6,18 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
   
     if (navbarUsernameEl) navbarUsernameEl.textContent = storedUsername;
     if (heroUsernameEl) heroUsernameEl.textContent = storedUsername;
-
-    // Log vehicle_id from localStorage/sessionStorage for debugging
-    const vehicleId = localStorage.getItem('vehicle_id') || sessionStorage.getItem('vehicle_id');
-    if (vehicleId) {
-        console.log('Vehicle ID found in storage:', vehicleId);
-    } else {
-        console.warn('Vehicle ID not found in storage');
-    }
-});
+  });
   
-document.addEventListener('DOMContentLoaded', function() {
-  
+  document.addEventListener('DOMContentLoaded', function() {
+    
     function showSignupMessage(message, type) {
       const alertBox = document.getElementById('alert');
       const alertText = document.getElementById('alert-text');
@@ -32,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
         alert(message);
       }
     }
-
+    
     // Validate file size
     function validateFileSize(fileInput, maxSizeMB, fileName) {
       if (!fileInput || !fileInput.files || !fileInput.files[0]) {
@@ -52,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       return { valid: true };
     }
-  
+    
     // Validate dates
     function validateDates(issueDate, expirationDate, docName, checkOneMonth = false) {
       const today = new Date();
@@ -105,8 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       return { valid: true };
     }
-
-
+  
     function submitDriverDocsRequest() {
       const submitBtn = document.getElementById('submitBtn');
       const form = document.getElementById('driverForm');
@@ -115,49 +106,37 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('submitBtn or form not found');
         return;
       }
-
-      // FIXED: Properly retrieve and validate vehicle_id
-      const vehicleId = localStorage.getItem('vehicle_id') || sessionStorage.getItem('vehicle_id');
-      
-      // Check if vehicleId exists and is not empty
-      if (!vehicleId || vehicleId.trim() === '') {
-        showSignupMessage('Vehicle ID is missing. Please complete vehicle registration first.', 'error');
-        return;
-      }
-      
-      console.log('Vehicle ID retrieved for submission:', vehicleId);
     
       submitBtn.disabled = true;
       submitBtn.textContent = 'Checking...';
     
       try {
         
-        // Updated to match the new field IDs in HTML
+        const driverPictureInput = document.getElementById('driver_picture');
+        const driverPictureValidation = validateFileSize(driverPictureInput, 2, 'Driver Picture');
+        if (!driverPictureValidation.valid) {
+          showSignupMessage(driverPictureValidation.message, 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Continue';
+          return;
+        }
+    
         const docMappings = [
           { 
-            name: 'Vehicle Registration',
-            codeId: 'veh_reg_code',
-            dateId: 'veh_reg_publish',
-            expId: 'veh_reg_exp',
-            fileId: 'veh_reg_file',
+            name: 'ID/Passport',
+            codeId: 'id_doc_code',
+            dateId: 'id_doc_publish',
+            expId: 'id_doc_exp',
+            fileId: 'id_doc_file',
             checkOneMonth: false,
             required: true
           },
           { 
-            name: 'MOT Certificate',
-            codeId: 'veh_mot_code',
-            dateId: 'mot_publish',
-            expId: 'mot_exp',
-            fileId: 'mot_file',
-            checkOneMonth: false,
-            required: true
-          },
-          { 
-            name: 'Vehicle Classification Certificate',
-            codeId: 'veh_cl_code',
-            dateId: 'veh_publish',
-            expId: 'v_doc_exp_date',
-            fileId: 'image_pdf',
+            name: 'Driving License',
+            codeId: 'dl_code',
+            dateId: 'dl_publish',
+            expId: 'dl_exp',
+            fileId: 'dl_file',
             checkOneMonth: false,
             required: true
           }
@@ -180,15 +159,15 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!code) {
               showSignupMessage(`Please fill in document code for ${doc.name}.`, 'error');
               submitBtn.disabled = false;
-              submitBtn.textContent = 'Submit Driver & Vehicle Request';
+              submitBtn.textContent = 'Continue';
               return;
             }
     
-            const fileValidation = validateFileSize(fileInput, 5, doc.name); // Changed to 5MB to match PHP
+            const fileValidation = validateFileSize(fileInput, 2, doc.name);
             if (!fileValidation.valid) {
               showSignupMessage(fileValidation.message, 'error');
               submitBtn.disabled = false;
-              submitBtn.textContent = 'Submit Driver & Vehicle Request';
+              submitBtn.textContent = 'Continue';
               return;
             }
     
@@ -196,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!dateValidation.valid) {
               showSignupMessage(dateValidation.message, 'error');
               submitBtn.disabled = false;
-              submitBtn.textContent = 'Submit Driver & Vehicle Request';
+              submitBtn.textContent = 'Continue';
               return;
             }
           }
@@ -204,40 +183,31 @@ document.addEventListener('DOMContentLoaded', function() {
     
         console.log('Creating FormData...');
         const formData = new FormData(form); 
-        
-        // FIXED: Explicitly append vehicle_id to FormData
-        formData.append('vehicle_id', vehicleId);
-        console.log('Vehicle ID added to FormData:', vehicleId);
     
         console.log('FormData contents:');
         for (let pair of formData.entries()) {
           console.log(pair[0] + ': ' + pair[1]);
         }
     
-        submitBtn.textContent = 'Uploading...';
-
-        fetch('company_request_doc.php', {
+        fetch('rent_docs.php', {
           method: 'POST',
           body: formData
         })
           .then(response => {
             console.log('Response received:', response.status);
             if (!response.ok) {
-              return response.text().then(text => {
-                console.error('Error response:', text);
-                throw new Error(`HTTP error! status: ${response.status}`);
-              });
+              throw new Error(`HTTP error! status: ${response.status}`);
             }
             return response.text();
           })
           .then(text => {
             console.log('Server response:', text);
             
-            if (text.includes('<b>') || text.includes('Fatal error') || text.includes('Warning') || text.includes('Parse error')) {
+            if (text.includes('<b>') || text.includes('Fatal error') || text.includes('Warning')) {
               console.error('PHP Error:', text);
               showSignupMessage('Server error. Please check console for details.', 'error');
               submitBtn.disabled = false;
-              submitBtn.textContent = 'Submit Driver & Vehicle Request';
+              submitBtn.textContent = 'Continue';
               return;
             }
     
@@ -248,39 +218,40 @@ document.addEventListener('DOMContentLoaded', function() {
               console.error('Invalid JSON:', text);
               showSignupMessage('Server returned invalid response.', 'error');
               submitBtn.disabled = false;
-              submitBtn.textContent = 'Submit Driver & Vehicle Request';
+              submitBtn.textContent = 'Continue';
               return;
             }
     
             if (data.status === 'success') {
-              showSignupMessage(data.message || 'Vehicle documents submitted successfully!', 'success');
+              showSignupMessage(data.message || 'Driver documents submitted successfully!', 'success');
               setTimeout(() => {
-                window.location.href = 'homepage_pas.html';
+                window.location.href = 'vehicle_request.html';
               }, 1500);
             } else {
               showSignupMessage(data.message || 'Submission failed.', 'error');
               if (data.debug) {
                 console.log('Debug info:', data.debug);
               }
-              submitBtn.disabled = false;
-              submitBtn.textContent = 'Submit Driver & Vehicle Request';
             }
+    
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Continue';
           })
           .catch(error => {
             console.error('Fetch error details:', error);
             showSignupMessage('Upload error: ' + error.message, 'error');
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Submit Driver & Vehicle Request';
+            submitBtn.textContent = 'Continue';
           });
     
       } catch (error) {
         console.error('Validation error:', error);
         showSignupMessage('Form validation error: ' + error.message, 'error');
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit Driver & Vehicle Request';
+        submitBtn.textContent = 'Continue';
       }
     }
-
+  
     // Setup event listener
     const submitBtn = document.getElementById('submitBtn');
     if (submitBtn) {
@@ -292,5 +263,5 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
       console.error('Submit button not found!');
     }
-  
-});
+    
+  });

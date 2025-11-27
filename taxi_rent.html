@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Book a Ride | OSRH  </title>
+  <title>Book a Ride | OSRH</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <link rel="stylesheet" href="style.css">
@@ -21,24 +21,69 @@
  
   <main class="main">
     <section class="hero-card">
-      <h1 class="hero-title">Book a Ride</h1>
+      <h1 class="hero-title" >Book a Ride
+        <a href="#" id="request-driver-link"></a>
+      </h1> 
       <p class="hero-subtitle">
         Choose the type of ride you want to book.
       </p>
 
       <div class="home-options">
       
-        <a class="home-option-card" href="taxi.html"><!-- ta services pou apetoun apla dropoff kai pickup taxi -->
+        <a class="home-option-card" href="taxi.html">
           <h2>Ride hailing</h2>
         </a>
 
-        <a class="home-option-card" href="rent.html"><!-- ride now -->
+        <a class="home-option-card" href="rent.html" id="rent-car-link">
           <h2>Rent a Car</h2>
-
         </a>
-      
 
-        </a>
+        <!-- Message display div for rent a car -->
+        <div id="rent-car-message" style="margin-top: 10px; white-space: pre-line;"></div>
+
+        <script>
+          document.addEventListener('DOMContentLoaded', function () {
+            const link   = document.getElementById('rent-car-link');
+            const msgDiv = document.getElementById('rent-car-message');
+        
+            link.addEventListener('click', function (e) {
+              e.preventDefault();
+        
+              msgDiv.textContent = '';
+              msgDiv.style.color = 'red';
+        
+          
+              fetch('checkCanBeDriver.php', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+              })
+              .then(response => response.json())
+              .then(data => {
+                console.log('Age Check Response:', data);
+        
+                if (!data.success) {
+   
+                  msgDiv.style.color = 'red';
+                  msgDiv.style.fontWeight = 'bold';
+                  msgDiv.textContent = data.message || 'You must be at least 18 years old to rent a car.';
+                } else {
+             
+                  window.location.href = 'rent_docs.html';
+                }
+              })
+              .catch(err => {
+                console.error(err);
+                msgDiv.style.color = 'red';
+                msgDiv.style.fontWeight = 'bold';
+                msgDiv.textContent = 'Something went wrong. Please try again later.';
+              });
+            });
+          });
+        </script>
+
       </div>
     </section>
   </main>
