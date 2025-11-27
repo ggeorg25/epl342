@@ -80,11 +80,6 @@
         const rentalStart = document.getElementById('start').value;
         const rentalEnd = document.getElementById('end').value;
 
-        console.log('Form values captured:');
-        console.log('serviceType:', serviceType);
-        console.log('rentalStart:', rentalStart);
-        console.log('rentalEnd:', rentalEnd);
-
         if (!rentalStart || !rentalEnd) {
           alert('Please select both start and end dates.');
           return;
@@ -107,8 +102,6 @@
         body.append('service_type', serviceType);
         body.append('rental_start', formatForSQL(rentalStart));
         body.append('rental_end', formatForSQL(rentalEnd));
-
-        console.log('Sending to set_session.php:', body.toString());
 
         fetch('set_session.php', {
           method: 'POST',

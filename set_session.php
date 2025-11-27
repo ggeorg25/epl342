@@ -7,11 +7,6 @@ $allowed = ['service','service_type','pickup_lat','pickup_lng','dropoff_lat','dr
 
 $data = $_POST;
 
-// Log everything to a file for debugging
-$logFile = __DIR__ . '/debug_session.log';
-file_put_contents($logFile, "\n\n=== " . date('Y-m-d H:i:s') . " ===\n", FILE_APPEND);
-file_put_contents($logFile, "POST data received:\n" . print_r($data, true) . "\n", FILE_APPEND);
-
 foreach ($allowed as $key) {
     if (isset($data[$key])) {
         // Normalize keys for service and service_type, keep others as-is
@@ -27,8 +22,6 @@ foreach ($allowed as $key) {
         }
     }
 }
-
-file_put_contents($logFile, "Session after save:\n" . print_r($_SESSION, true) . "\n", FILE_APPEND);
 
 // If the form included a redirect flag (non-AJAX submit), redirect to the PHP page
 if (isset($data['redirect']) && $data['redirect']) {

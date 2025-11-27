@@ -98,13 +98,7 @@ function fetchRentalVehicles(map) {
   fetch('get_rental_session.php')
     .then(res => res.json())
     .then(sessionData => {
-      console.log('Session data received:', sessionData);
-      console.log('service_type:', sessionData.service_type);
-      console.log('rental_start:', sessionData.rental_start);
-      console.log('rental_end:', sessionData.rental_end);
-      
       if (!sessionData.service_type || !sessionData.rental_start || !sessionData.rental_end) {
-        console.error('Missing data - service_type:', sessionData.service_type, 'rental_start:', sessionData.rental_start, 'rental_end:', sessionData.rental_end);
         showCustomPopup('Missing rental information. Please go back and fill in all details.', true);
         return;
       }
@@ -187,8 +181,6 @@ function fetchRentalVehicles(map) {
 }
 
 function selectVehicle(vehicleId, vehicleName) {
-  console.log('Selected vehicle:', vehicleId, vehicleName);
-  
   // Save selected vehicle to session
   fetch('set_session.php', {
     method: 'POST',
