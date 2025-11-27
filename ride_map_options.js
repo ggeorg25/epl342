@@ -1,8 +1,3 @@
-// Load stored data from PHP session (fallback to null)
-// These variables will be injected by the PHP file via inline script
-// const service, serviceType, serviceTypeName, pickupLat, pickupLng, dropoffLat, dropoffLng;
-
-// Display service info
 function initializePageData(sessionData) {
   document.getElementById("service-name").textContent = sessionData.service || "N/A";
   document.getElementById("ride-type").textContent = sessionData.serviceTypeName || sessionData.serviceType || "N/A";
@@ -128,12 +123,24 @@ function loadVehicleTypes(serviceType, pickupLat, pickupLng) {
 }
 
 function chooseVehicle(id) {
-  // save selection to session via POST then go to confirmation
+  console.log('Sending vehicle_type_id to session:', id);
+  
+  // save selection to session via POST then go to confirmation AFTER response
   fetch('set_session.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: `selected_vehicle_type_id=${encodeURIComponent(id)}`
-  }).finally(() => {
-    window.location.href = 'ride_confirm.html';
+  })
+  .then(r => r.json())
+  .then(response => {
+    console.log('Session response:', response);
+    return response;
+  })
+  .catch(err => {
+    console.error('Session save error:', err);
+    return {};
+  })
+  .finally(() => {
+    window.location.href = 'ride_confirm.php';
   });
 }

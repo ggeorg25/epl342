@@ -42,48 +42,58 @@ try {
     $conn = $db->getConnection();
 
     // ===================================================================
-    // STEP 1: Create the ride request
+    // Validate user exists using stored procedure
     // ===================================================================
-    $sql = "{CALL [eioann09].[CreateRideRequest](?, ?, ?, ?, ?, ?, ?, ?)}";
+    $sql = "{CALL [eioann09].[ValidateUserExists](?, ?)}";
     $stmt = $conn->prepare($sql);
+    $userExists = 0;
     $stmt->bindParam(1, $rider_users_id, PDO::PARAM_INT);
-    $stmt->bindParam(2, $service_id, PDO::PARAM_INT);
-    $stmt->bindParam(3, $service_type_id, PDO::PARAM_INT);
-    $stmt->bindParam(4, $vehicle_type_id, PDO::PARAM_INT);
-    $stmt->bindParam(5, $pickup_point_id, PDO::PARAM_INT);
-    $stmt->bindParam(6, $dropoff_point_id, PDO::PARAM_INT);
-    $stmt->bindParam(7, $estimated_price, PDO::PARAM_STR);
-    $stmt->bindParam(8, $new_ride_id, PDO::PARAM_INT, 4000);
-    
+    $stmt->bindParam(2, $userExists, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 4);
     $stmt->execute();
     $stmt->closeCursor();
-
-    if ($new_ride_id === null) {
-        throw new Exception('Failed to create ride request.');
+    
+    if (!$userExists) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Invalid user ID. Please log in again.',
+            'debug' => ['users_id' => $rider_users_id]
+        ]);
+        exit;
     }
 
     // ===================================================================
-    // STEP 2: Request ride to available drivers
+    // Create ride request (single RIDEREQUEST entry without driver)
     // ===================================================================
-    $sql = "{CALL [eioann09].[RequestRideToDrivers](?)}";
+    $sql = "{CALL [eioann09].[CreateRideRequest](?, ?, ?, ?, ?, ?, ?)}";
     $stmt = $conn->prepare($sql);
-    $stmt->bindParam(1, $new_ride_id, PDO::PARAM_INT);
+    $stmt->bindParam(1, $pickup_point_id, PDO::PARAM_INT);
+    $stmt->bindParam(2, $dropoff_point_id, PDO::PARAM_INT);
+    $stmt->bindParam(3, $service_id, PDO::PARAM_INT);
+    $stmt->bindParam(4, $service_type_id, PDO::PARAM_INT);
+    $stmt->bindParam(5, $vehicle_type_id, PDO::PARAM_INT);
+    $stmt->bindParam(6, $rider_users_id, PDO::PARAM_INT);
+    $stmt->bindParam(7, $estimated_price, PDO::PARAM_STR);
     
-    $stmt->execute();
+    $executed = $stmt->execute();
     $stmt->closeCursor();
+
+    if (!$executed) {
+        throw new Exception('Failed to execute stored procedure');
+    }
 
     // ===================================================================
     // SUCCESS: Return ride details
     // ===================================================================
+    http_response_code(200);
     echo json_encode([
         'status'           => 'success',
-        'message'          => 'Ride request created and sent to available drivers.',
-        'ride_id'          => $new_ride_id,
-        'ride_status'      => 'Offered'
+        'message'          => 'Ride request created. Waiting for driver to accept.',
+        'ride_status'      => 'Pending'
     ]);
+    exit;
 
 } catch (PDOException $e) {
-    http_response_code(500);
+    http_response_code(200); // Change to 200 so JavaScript can read the error
     
     // Check if it's a SQL Server error with a custom message
     $errorInfo = $e->errorInfo;
@@ -96,14 +106,28 @@ try {
     
     echo json_encode([
         'status'  => 'error',
-        'message' => $errorMessage
+        'message' => $errorMessage,
+        'sqlstate' => $errorInfo[0] ?? null,
+        'error_code' => $errorInfo[1] ?? null,
+        'full_error' => $e->getMessage(),
+        'debug'   => [
+            'users_id' => $rider_users_id,
+            'service_id' => $service_id,
+            'service_type_id' => $service_type_id,
+            'vehicle_type_id' => $vehicle_type_id,
+            'pickup_point_id' => $pickup_point_id,
+            'dropoff_point_id' => $dropoff_point_id,
+            'estimated_price' => $estimated_price
+        ]
     ]);
+    exit;
     
 } catch (Exception $e) {
-    http_response_code(500);
+    http_response_code(200); // Change to 200 so JavaScript can read the error
     echo json_encode([
         'status'  => 'error',
         'message' => $e->getMessage()
     ]);
+    exit;
 }
 ?>

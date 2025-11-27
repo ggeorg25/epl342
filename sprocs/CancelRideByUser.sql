@@ -1,64 +1,37 @@
 CREATE PROCEDURE CancelRideByUser
 (
-    @ride_id INT
+    @users_id INT
 )
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @driver_id INT;
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
-    SELECT @driver_id = driver_id
-    FROM Ride
-    WHERE ride_id = @ride_id;
+        --------------------------------------------------------
+        -- 1. Check if user has a pending ride request
+        --------------------------------------------------------
+        IF NOT EXISTS (SELECT 1 FROM RIDEREQUEST WHERE users_id = @users_id AND status = 'Pending')
+        BEGIN
+            RAISERROR('No pending ride request found for this user.', 16, 1);
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END;
 
+        --------------------------------------------------------
+        -- 2. Delete the pending ride request
+        --------------------------------------------------------
+        DELETE FROM RIDEREQUEST 
+        WHERE users_id = @users_id 
+        AND status = 'Pending';
 
-    --------------------------------------------------------
-    -- If ride already completed or cancelled, do nothing
-    --------------------------------------------------------
-    IF EXISTS (
-        SELECT 1 FROM Ride
-        WHERE ride_id = @ride_id
-          AND status IN ('Completed', 'Cancelled')
-    )
-    BEGIN
-        RETURN;
-    END;
+        COMMIT TRANSACTION;
+    END TRY
 
-
-    --------------------------------------------------------
-    -- Cancel all pending requests
-    --------------------------------------------------------
-    DELETE FROM RideRequest
-    WHERE ride_id = @ride_id
-      AND status = 'Pending';
-
-
-    --------------------------------------------------------
-    -- If a driver was assigned, free them
-    --------------------------------------------------------
-    IF @driver_id IS NOT NULL
-    BEGIN
-        UPDATE Driver
-        SET status = 'N'
-        WHERE driver_id = @driver_id;
-    END
-
-
-    --------------------------------------------------------
-    -- Mark ride cancelled
-    --------------------------------------------------------
-    UPDATE Ride
-    SET status = 'Cancelled'
-    WHERE ride_id = @ride_id;
-
-     --------------------------------------------------------
-    -- Free vehicle
-    --------------------------------------------------------
-    UPDATE Vehicle
-    SET isactivev = 0
-    WHERE vehicle_id = (
-        SELECT vehicle_id 
-        FROM Ride WHERE ride_id = @ride_id)
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
 END;
 GO

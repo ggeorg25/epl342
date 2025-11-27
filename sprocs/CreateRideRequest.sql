@@ -1,86 +1,71 @@
 CREATE PROCEDURE CreateRideRequest
-
-(
-    @rider_users_id INT,
-    @service_id INT,
-    @service_type_id INT,
     @pickup_point_id INT,
     @dropoff_point_id INT,
-    @estimated_price DECIMAL(10,2) = NULL,
-
-    @new_ride_id INT OUTPUT
-)
+    @service_id INT,
+    @service_type_id INT,
+    @vehicle_type_id INT,
+    @rider_users_id INT,
+    @estimated_price DECIMAL(10,2) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
 
-   
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
-    IF NOT EXISTS (SELECT 1 FROM Users WHERE users_id = @rider_users_id)
-    BEGIN
-        RAISERROR('Invalid rider_users_id.', 16, 1);
-        RETURN;
-    END
+        ---------------------------------------------------------
+        -- 0. Check if user already has a pending ride request
+        ---------------------------------------------------------
+        IF EXISTS (SELECT 1 FROM RIDEREQUEST WHERE users_id = @rider_users_id AND status = 'Pending')
+        BEGIN
+            RAISERROR('You already have a pending ride request. Please cancel it before creating a new one.', 16, 1);
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END;
 
-    IF NOT EXISTS (SELECT 1 FROM Service WHERE service_id = @service_id)
-    BEGIN
-        RAISERROR('Invalid service_id.', 16, 1);
-        RETURN;
-    END
+        ---------------------------------------------------------
+        -- 1. Check service_id is valid (adjust range as needed)
+        ---------------------------------------------------------
+        IF @service_id NOT BETWEEN 6 AND 10
+        BEGIN
+            RAISERROR('This service type does NOT support drivers.', 16, 1);
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END;
 
-    IF NOT EXISTS (SELECT 1 FROM Service_Type WHERE service_type_id = @service_type_id)
-    BEGIN
-        RAISERROR('Invalid service_type_id.', 16, 1);
-        RETURN;
-    END
+        ---------------------------------------------------------
+        -- 2. Create a single RIDEREQUEST entry without driver_id
+        --    Driver will be assigned when someone accepts
+        ---------------------------------------------------------
+        INSERT INTO RIDEREQUEST 
+        (
+            request_time,
+            response_time,
+            status,
+            vehicle_type_requested,
+            users_id,
+            pickup_point_id,
+            dropoff_point_id,
+            is_ride_now
+        )
+        VALUES
+        (            
+            GETDATE(),
+            NULL,
+            'Pending',              -- status: Pending until driver accepts
+            @vehicle_type_id,
+            @rider_users_id,
+            @pickup_point_id,
+            @dropoff_point_id,
+            0
+        );
 
-    IF NOT EXISTS (SELECT 1 FROM Point WHERE point_id = @pickup_point_id)
-    BEGIN
-        RAISERROR('Invalid pickup_point_id.', 16, 1);
-        RETURN;
-    END
+        COMMIT TRANSACTION;
+    END TRY
 
-    IF NOT EXISTS (SELECT 1 FROM Point WHERE point_id = @dropoff_point_id)
-    BEGIN
-        RAISERROR('Invalid dropoff_point_id.', 16, 1);
-        RETURN;
-    END
-
-   
-
-    INSERT INTO Ride
-    (
-        users_id,
-        service_id,
-        service_type_id,
-        pickup_point_id,
-        dropoff_point_id,
-        price,
-
-        driver_id,
-        vehicle_id,
-        status,
-        ride_datetime_start,
-        ride_datetime_end
-    )
-    VALUES
-    (
-        @rider_users_id,
-        @service_id,
-        @service_type_id,
-        @pickup_point_id,
-        @dropoff_point_id,
-        @estimated_price,
-
-        NULL,           -- driver_id
-        NULL,           -- vehicle_id
-        'Requested',    -- initial status
-        NULL,           -- ride start time
-        NULL            -- ride end time
-    );
-
-   
-    SET @new_ride_id = SCOPE_IDENTITY();
-
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
 END;
 GO

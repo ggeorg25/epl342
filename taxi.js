@@ -1,41 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const demoEl = document.getElementById("demo");
-
-
   const storedUsername   = localStorage.getItem("username") || "User";
   const navbarUsernameEl = document.getElementById("navbar-username");
   const heroUsernameEl   = document.getElementById("hero-username");
 
   if (navbarUsernameEl) navbarUsernameEl.textContent = storedUsername;
   if (heroUsernameEl)   heroUsernameEl.textContent   = storedUsername;
-
-//link:https://www.w3schools.com/html/html5_geolocation.asp#:~:text=Using%20HTML%20Geolocation%20API&text=The%20getCurrentPosition()%20method%20is%20used%20to%20return%20the%20user's%20current%20location.
-  window.getLocation = function () {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(geoSuccess, geoError);
-    } else if (demoEl) {
-      demoEl.innerHTML = "Geolocation is not supported by this browser.";
-    }
-  };
-
-  function geoSuccess(position) {
-    const lat = position.coords.latitude;
-    const lng = position.coords.longitude;
-
-    if (demoEl) {
-      demoEl.innerHTML = "Latitude: " + lat + "<br>Longitude: " + lng;
-    }
-
-
-    if (window.map) {
-      panTo(lat, lng);
-    }
-  }
-
-  function geoError() {
-    alert("Sorry, no position available.");
-  }
-
 
   const form = document.getElementById("taxi-form");
   if (form) {
@@ -122,6 +91,18 @@ function showLocationPopup(type) {
   };
 }
 
+// Create marker icon helper
+function createMarkerIcon(color) {
+  return L.icon({
+    iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+  });
+}
+
 window.initTaxiMap = function () {
   const mapDiv = document.getElementById("map");
   if (!mapDiv) return;
@@ -129,38 +110,25 @@ window.initTaxiMap = function () {
   const defaultCenter = { lat: 35.1264, lng: 33.4299 };
 
   // Initialize Leaflet map
-  initMap("map", {
-    center: defaultCenter,
-    zoom: 16
-  });
+  initMap("map", { center: defaultCenter, zoom: 16 });
 
-  // Make map global
   const leafletMap = window.map;
 
   // Get user location
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const userPos = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
-        // Zoom to user location
-        panTo(userPos.lat, userPos.lng, 16);
-        
-        // Add marker at user's current location
-        L.marker([userPos.lat, userPos.lng]).addTo(leafletMap).bindPopup("Your Location").openPopup();
+        panTo(position.coords.latitude, position.coords.longitude, 16);
+        L.marker([position.coords.latitude, position.coords.longitude])
+          .addTo(leafletMap)
+          .bindPopup("Your Location")
+          .openPopup();
       },
-      (error) => {
-        console.warn("Geolocation error:", error);
-      }
+      (error) => console.warn("Geolocation error:", error)
     );
   }
 
-  let pickupMarker  = null;
-  let dropoffMarker = null;
-
-  // Make markers accessible globally for clear function
+  // Make markers accessible globally
   window.pickupMarker = null;
   window.dropoffMarker = null;
 
@@ -182,21 +150,12 @@ window.initTaxiMap = function () {
 
     if (mode === "pickup") {
       // Remove previous pickup marker
-      if (pickupMarker) {
-        leafletMap.removeLayer(pickupMarker);
+      if (window.pickupMarker) {
+        leafletMap.removeLayer(window.pickupMarker);
       }
 
       // Add new pickup marker (green)
-      const greenIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-      });
-      pickupMarker = L.marker([lat, lng], {icon: greenIcon}).addTo(leafletMap);
-      window.pickupMarker = pickupMarker;
+      window.pickupMarker = L.marker([lat, lng], {icon: createMarkerIcon('green')}).addTo(leafletMap);
 
       if (pickupLatInput)  pickupLatInput.value  = lat;
       if (pickupLngInput)  pickupLngInput.value  = lng;
@@ -209,50 +168,26 @@ window.initTaxiMap = function () {
       }
 
     } else {
-      // If no pickup marker exists, switch to pickup mode and set pickup instead
+      // If no pickup marker exists, set pickup first
       if (!window.pickupMarker) {
         const pickupRadio = document.querySelector('input[value="pickup"]');
-        if (pickupRadio) {
-          pickupRadio.checked = true;
-        }
+        if (pickupRadio) pickupRadio.checked = true;
         
-        // Add pickup marker
-        const greenIcon = L.icon({
-          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-          shadowSize: [41, 41]
-        });
-        pickupMarker = L.marker([lat, lng], {icon: greenIcon}).addTo(leafletMap);
-        window.pickupMarker = pickupMarker;
+        window.pickupMarker = L.marker([lat, lng], {icon: createMarkerIcon('green')}).addTo(leafletMap);
 
         if (pickupLatInput)  pickupLatInput.value  = lat;
         if (pickupLngInput)  pickupLngInput.value  = lng;
         if (pickupDisplay)   pickupDisplay.value   = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-        
-        // DON'T auto-switch back to dropoff - let user see pickup is selected
-        
         return;
       }
       
       // Remove previous dropoff marker
-      if (dropoffMarker) {
-        leafletMap.removeLayer(dropoffMarker);
+      if (window.dropoffMarker) {
+        leafletMap.removeLayer(window.dropoffMarker);
       }
 
       // Add new dropoff marker (red)
-      const redIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-      });
-      dropoffMarker = L.marker([lat, lng], {icon: redIcon}).addTo(leafletMap);
-      window.dropoffMarker = dropoffMarker;
+      window.dropoffMarker = L.marker([lat, lng], {icon: createMarkerIcon('red')}).addTo(leafletMap);
 
       if (dropoffLatInput) dropoffLatInput.value = lat;
       if (dropoffLngInput) dropoffLngInput.value = lng;

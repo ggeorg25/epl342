@@ -359,7 +359,7 @@ async function loadPendingRides() {
         console.error('Error sending message:', error);
         alert('Error sending message');
     }
-}
+
 
 // ===== MANUAL REFRESH =====
 function pollNow() {
