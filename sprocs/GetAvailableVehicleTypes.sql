@@ -37,20 +37,15 @@ BEGIN
     )
 
     ------------------------------------------------------------
-    -- Step 2: Join with vehicle types
+    -- Step 2: Join with vehicle types - ONLY show types with nearby vehicles
     ------------------------------------------------------------
     SELECT 
         vt.vehicle_type_id,
         vt.vehicle_type,
-        ISNULL(nv.available_count, 0) AS available_nearby
+        nv.available_count AS available_nearby
     FROM Vehicle_Type vt
-    LEFT JOIN NearbyVehicles nv
+    INNER JOIN NearbyVehicles nv
         ON vt.vehicle_type_id = nv.vehicle_type_id
-    WHERE vt.vehicle_type_id IN (
-        SELECT DISTINCT vehicle_type_id
-        FROM Vehicle
-        WHERE service_type_id = @service_type_id
-          AND is_active = 0
-    );
+    WHERE nv.available_count > 0;
 END;
 GO
