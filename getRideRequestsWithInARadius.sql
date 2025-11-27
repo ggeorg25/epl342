@@ -19,7 +19,7 @@ BEGIN
     FROM  DRIVER
     WHERE @users_id=users_id
 
-    SELECT U.username,U.phone_number,P.GeoPoint --check if projects correct GeoPoint
+    SELECT U.username,U.phone_number,P.GeoPoint, --check if projects correct GeoPoint
     FROM RIDE R,USERS U,POINT P,DriverLocation Dl
     WHERE U.users_id=R.users_id AND R.pickup_point_id=P.point_id AND @driver_id=Dl.driver_id 
     AND P.GeoPoint.STDistance(Dl.location) < 5000 AND R.users_id=U.users_id
